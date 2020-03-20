@@ -9,6 +9,10 @@
     <Compile Remove="Migrations\20200313082856_Add-cv-table.Designer.cs" />
     <Compile Remove="Migrations\20200317043354_one-on-one_ef.cs" />
     <Compile Remove="Migrations\20200317043354_one-on-one_ef.Designer.cs" />
+    <Compile Remove="Migrations\20200320111920_SeedDatabase.cs" />
+    <Compile Remove="Migrations\20200320111920_SeedDatabase.Designer.cs" />
+    <Compile Remove="Migrations\20200320112217_Seed_Tables02.cs" />
+    <Compile Remove="Migrations\20200320112217_Seed_Tables02.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

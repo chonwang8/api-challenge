@@ -5,18 +5,17 @@ using Microsoft.Extensions.Options;
 
 namespace API.Controllers
 {
-
     [Route("start")]
-    [ApiController]
-    public class WelcomeController : ControllerBase
+    public class WelcomeController : BaseController
     {
+        #region classes and constructor
         protected readonly IOptions<IndexPage> _indexPage;
 
         public WelcomeController(IOptions<IndexPage> indexPage)
         {
             _indexPage = indexPage;
         }
-
+        #endregion
 
         /// <summary>
         /// View Start page
@@ -29,7 +28,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         #endregion
-        public IActionResult Guest()
+        public IActionResult Start()
         {
             var index = _indexPage.Value;
             return Ok(index.Message);
@@ -38,16 +37,16 @@ namespace API.Controllers
 
 
     [Route("help")]
-    [ApiController]
-    public class HelpController : ControllerBase
+    public class HelpController : BaseController
     {
+        #region classes and constructor
         protected readonly IOptions<HelpPage> _helpPage;
 
         public HelpController(IOptions<HelpPage> helpPage)
         {
             _helpPage = helpPage;
         }
-
+        #endregion
 
         /// <summary>
         /// View Help page
@@ -83,7 +82,6 @@ namespace API.Controllers
         }
 
 
-
         [HttpGet("register")]
         public IActionResult RegisterHelp()
         {
@@ -98,8 +96,5 @@ namespace API.Controllers
             return Ok(loginFormat);
         }
     }
-
-
-
 
 }

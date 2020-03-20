@@ -2,7 +2,6 @@
 using BLL.Helpers;
 using BLL.Interfaces;
 using BLL.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,11 +19,10 @@ using System.Threading.Tasks;
 namespace API.Controllers
 {
     [Route("user")]
-    [ApiController]
-    [Authorize]
     [MyAuthorize("junior, mid-level, senior")]
-    public class UserController : ControllerBase
+    public class UserController : BaseController
     {
+        #region classes and contructor
         private readonly IUserLogic _userLogic;
         protected readonly IOptions<AppSetting> _options;
         public UserController(IUserLogic userLogic, IOptions<AppSetting> options)
@@ -32,6 +30,7 @@ namespace API.Controllers
             _userLogic = userLogic;
             _options = options;
         }
+        #endregion
 
         /// <summary>
         /// View List of Challeges of User's position
@@ -129,10 +128,12 @@ namespace API.Controllers
         /// <response code="401">Unauthorize</response>
         /// <response code="500">Internal Error</response>
         [HttpPost("cv")]
+        #region repCode 200 400 401 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        #endregion
         public async Task<IActionResult> UploadCV(IFormFile file)
         {
             ClaimsIdentity identity = HttpContext.User.Identity as ClaimsIdentity;
@@ -165,7 +166,6 @@ namespace API.Controllers
                 {
                     await fileStream.CopyToAsync(ms);
                     status = await _userLogic.WritingAnObjectAsync(ms, fileName, userProfile);
-
                 }
                 catch (PostgresException pgs)
                 {
@@ -180,6 +180,7 @@ namespace API.Controllers
             return status ? Ok("success")
                           : StatusCode((int)HttpStatusCode.InternalServerError, $"error uploading {fileName}");
         }
+
         /// <summary>
         /// Download CV file
         /// </summary>
@@ -190,11 +191,13 @@ namespace API.Controllers
         /// <response code="404">File Not Found</response>
         /// <response code="500">Internal Error</response>
         [HttpGet("cvUrl")]
+        #region repCode 200 400 401 404 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        #endregion
         public IActionResult GetUserCvUrl()
         {
             ClaimsIdentity identity = HttpContext.User.Identity as ClaimsIdentity;
@@ -206,22 +209,26 @@ namespace API.Controllers
                 userProfile.Email = claims.FirstOrDefault(c => c.Type == "user_email").Value;
                 userProfile.Id = Guid.Parse(claims.FirstOrDefault(c => c.Type == "user_id").Value);
             }
+            if (userProfile.Id == null)
+            {
+                return BadRequest("Missing User Id");
+            }
             if (userProfile.Email == null)
             {
                 return BadRequest("Missing Email");
             }
             #endregion
-
-
-            var response = _userLogic.ReadFileUrlAsync(userProfile);
-
+            string response = "";
+            try
+            {
+                response = _userLogic.ReadFileUrlAsync(userProfile.Id);
+            }
+            catch (NullReferenceException nre)
+            {
+                return NotFound(nre);
+            }
+            
             return Ok(response);
-            //return new FileStreamResult(response.FileStream, response.ContentType)
-            //{
-            //    FileDownloadName = fileName
-            //};
         }
-
-
     }
 }

@@ -6,6 +6,7 @@ namespace BLL.Interfaces
     public interface IAdminLogic
     {
         List<PageModel> GetPageModelList();
-        List<PageModel> GetSearchPageModelList(string name);
+        List<PageModel> GetPageModelSortList(int pageItems, int page,string INDEX);
+        List<PageModel> GetSearchPageModelList(int pageItems, int page, string name);
     }
 }

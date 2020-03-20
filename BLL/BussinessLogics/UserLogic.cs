@@ -30,7 +30,6 @@ namespace BLL.BussinessLogics
         #endregion
 
 
-
         public ChallengeContent ViewChallengeContent(Guid ChallengeId)
         {
             var challenge = _uow.GetRepository<Challenge>().GetAll().FirstOrDefault(c => c.ChallengeId == ChallengeId);
@@ -144,35 +143,13 @@ namespace BLL.BussinessLogics
             }
         }
 
-        //public async Task<(Stream FileStream, string ContentType)> ReadFileAsync(string fileName)
-        //{
-        //    IAmazonS3 client = new AmazonS3Client(appSetting.AWSAccessKey, appSetting.AWSSecretKey, RegionEndpoint.APSoutheast1);
-        //    try
-        //    {
-        //        var fileTransferUtility = new TransferUtility(client);
-        //        var request = new GetObjectRequest()
-        //        {
-        //            BucketName = appSetting.BucketName,
-        //            Key = fileName
-        //        };
-        //        var meta = new GetObjectResponse();
-        //        string value = meta.ResponseMetadata.Metadata.FirstOrDefault(m => m.Key.Equals("email")).Value;
-
-        //        var objectResponse = await fileTransferUtility.S3Client.GetObjectAsync(request);
-        //        return (objectResponse.ResponseStream, objectResponse.Headers.ContentType);
-        //    }
-        //    catch (AmazonS3Exception)
-        //    {
-        //        return (null, null);
-        //    }
-        //}
-
-        public string ReadFileUrlAsync(UserProfile userProfile)
+        public string ReadFileUrlAsync(Guid Id)
         {
             IAmazonS3 client = new AmazonS3Client(appSetting.AWSAccessKey, appSetting.AWSSecretKey, RegionEndpoint.APSoutheast1);
             try
             {
-                var fileName = _uow.GetRepository<Cv>().GetAll().FirstOrDefault(c => c.UserId == userProfile.Id).FileName;
+                var fileName = _uow.GetRepository<Cv>().GetAll().FirstOrDefault(c => c.UserId == Id).FileName;
+                var Email = _uow.GetRepository<User>().GetAll().FirstOrDefault(u => u.UserId == Id).Email;
                 if (fileName == null)
                 {
                     return "File Not found";
@@ -180,7 +157,7 @@ namespace BLL.BussinessLogics
                 var request = new GetPreSignedUrlRequest()
                 {
                     BucketName = appSetting.BucketName,
-                    Key = userProfile.Email + "/" + fileName,
+                    Key = Email + "/" + fileName,
                     Expires = DateTime.Now.AddDays(10),
                     Protocol = Protocol.HTTPS
                 };
@@ -192,6 +169,10 @@ namespace BLL.BussinessLogics
             catch (AmazonS3Exception)
             {
                 return ("Error");
+            }
+            catch (NullReferenceException nre)
+            {
+                throw nre;
             }
         }
     }

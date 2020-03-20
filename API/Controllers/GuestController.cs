@@ -7,9 +7,8 @@ using System;
 
 namespace API.Controllers
 {
-    [Route("")]
-    [ApiController]
-    public class GuestController : ControllerBase
+    [Route("guest")]
+    public class GuestController : BaseController
     {
         #region objects and constructors
         private IGuestLogic _logic;
@@ -19,8 +18,6 @@ namespace API.Controllers
             _logic = guestLogic;
         }
         #endregion
-
-
 
 
         /// <summary>
@@ -95,15 +92,10 @@ namespace API.Controllers
             {
                 return BadRequest(ioe.Message + "\n" + ioe.StackTrace);
             }
-            //  ///////////////////////////////////
             //  Return : UserLogin includes :
             //  Email - ConfirmationCode
-            //  ///////////////////////////////////
             return Ok(userLogin);
         }
-
-
-
 
 
         /// <summary>
@@ -141,48 +133,43 @@ namespace API.Controllers
             };
 
             //  Check For Null Inputs
-
             string token = "";
 
-            //  Check For Null Inputs
+            //  Check For Bad Inputs
+            if (user.Email == null || user.ConfirmationCode == null)
+            {
+                return BadRequest("Error : Can not get appropriate email or confirmation code");
+            }
             if (user.Email.Length <= 0 || user.ConfirmationCode.Length <= 0)
             {
                 return BadRequest("Email and ConfimationCode can not be empty");
             }
-            if (email.Length <= 8)
+            if (user.Email.Length <= 8)
             {
                 return BadRequest("Email and ConfimationCode must be 8 or more characters");
             }
-
-            if (confirmationCode.Length < 32)
+            if (user.ConfirmationCode.Length < 32)
             {
                 return BadRequest("ConfimationCode must be 32 characters we sent you when you registered");
             }
 
-
             try
             {
                 token = _logic.Login(user);
-                //  ///////////////////////////////////
                 //  If token was an empty string, it mean username or password were incorrect
                 //  In theory it should not reach this if-block, instead throws ArgumentNullException
                 //  This is here just for safety measure
-                //  ///////////////////////////////////
                 if (token.Length == 0)
                 {
                     return NotFound("Wrong Email or Confimation code");
                 }
             }
-            //  ///////////////////////////////////
             //  Exception When User Is Not Found
-            //  ///////////////////////////////////
             catch (ArgumentNullException arn)
             {
                 return BadRequest(arn.Message + "\n" + arn.StackTrace);
             }
-            //  ///////////////////////////////////
             //  Exception When Position Assigned To User Is Not Found
-            //  ///////////////////////////////////
             catch (ArgumentException ar)
             {
                 return BadRequest(ar.Message + "\n" + ar.StackTrace);

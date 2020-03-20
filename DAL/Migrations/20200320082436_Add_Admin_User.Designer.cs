@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20200316064454_SeedChallenges")]
-    partial class SeedChallenges
+    [Migration("20200320082436_Add_Admin_User")]
+    partial class Add_Admin_User
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -46,7 +46,7 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("DAL.Entities.Cv", b =>
                 {
-                    b.Property<Guid>("KeyName")
+                    b.Property<Guid>("CvId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -59,12 +59,12 @@ namespace DAL.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("KeyName");
+                    b.HasKey("CvId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Cv");
+                    b.ToTable("Cvs");
                 });
 
             modelBuilder.Entity("DAL.Entities.Position", b =>
@@ -94,6 +94,9 @@ namespace DAL.Migrations
                     b.Property<string>("ConfirmationCode")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("DateCreate")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
                         .IsRequired()
