@@ -43,8 +43,9 @@ namespace API
             _helpPage = helpPage;
         }
 
-
-        //  For UserController
+        
+        //  User(s):
+        //  UserController
         public BaseController(IUserLogic userLogic, IOptions<AppSetting> options)
         {
             _userLogic = userLogic;
@@ -52,7 +53,8 @@ namespace API
         }
 
 
-        //  For AdminController
+        //  User(s):
+        //  AdminController
         public BaseController(IAdminLogic adminLogic, IUserLogic userLogic, IHttpContextAccessor httpContext)
         {
             _adminLogic = adminLogic;

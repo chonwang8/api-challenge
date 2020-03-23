@@ -51,6 +51,8 @@ namespace BLL.BussinessLogics
             return challengeContent;
         }
 
+
+
         public List<ChallengeProfile> ViewChallengesList(UserProfile userProfile)
         {
             string PosName = userProfile.PositionName;
@@ -143,17 +145,29 @@ namespace BLL.BussinessLogics
             }
         }
 
+
+
         public string ReadFileUrlAsync(Guid Id)
         {
-            IAmazonS3 client = new AmazonS3Client(appSetting.AWSAccessKey, appSetting.AWSSecretKey, RegionEndpoint.APSoutheast1);
             try
             {
-                var fileName = _uow.GetRepository<Cv>().GetAll().FirstOrDefault(c => c.UserId == Id).FileName;
-                var Email = _uow.GetRepository<User>().GetAll().FirstOrDefault(u => u.UserId == Id).Email;
+                IAmazonS3 client = new AmazonS3Client(appSetting.AWSAccessKey, appSetting.AWSSecretKey, RegionEndpoint.APSoutheast1);
+                string fileName;
+                try
+                {
+                    fileName = _uow.GetRepository<Cv>().GetAll().FirstOrDefault(c => c.UserId == Id).FileName;
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+                
                 if (fileName == null)
                 {
-                    return "File Not found";
+                    return null;
                 }
+                var Email = _uow.GetRepository<User>().GetAll().FirstOrDefault(u => u.UserId == Id).Email;
+                
                 var request = new GetPreSignedUrlRequest()
                 {
                     BucketName = appSetting.BucketName,
@@ -173,6 +187,10 @@ namespace BLL.BussinessLogics
             catch (NullReferenceException nre)
             {
                 throw nre;
+            }
+            catch (Exception e)
+            {
+                throw e;
             }
         }
     }

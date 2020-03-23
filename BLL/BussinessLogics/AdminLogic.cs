@@ -69,6 +69,7 @@ namespace BLL.BussinessLogics
                 .Where(u => u.Position.Name != "admin")
                 .Select(u => new PageModel
                 {
+                    UserId = u.UserId,
                     DateCreate = u.DateCreate,
                     Email = u.Email,
                     Position = u.Position.Name,
@@ -79,19 +80,19 @@ namespace BLL.BussinessLogics
 
             if (INDEX == DATE)
                 result = list
-                    .OrderBy(p => p.DateCreate)
+                    .OrderByDescending(p => p.DateCreate)
                     .ToList();
             else if (INDEX == EMAIL)
                 result = list
-                    .OrderBy(p => p.Email)
+                    .OrderByDescending(p => p.Email)
                     .ToList();
             else if (INDEX == POSITION)
                 result = list
-                    .OrderBy(p => p.Position)
+                    .OrderByDescending(p => p.Position)
                     .ToList();
             else
                 result = list
-                    .OrderBy(p => p.DateCreate)
+                    .OrderByDescending(p => p.DateCreate)
                     .ToList();
 
             if (result == null)
@@ -102,7 +103,7 @@ namespace BLL.BussinessLogics
             return result;
         }
 
-        public List<PageModel> GetSearchPageModelList(int pageItems, int page, string name)
+        public List<PageModel> GetPageModelSearchList(int pageItems, int page, string name)
         {
             var paging = new Paging();
             List<PageModel> result = new List<PageModel>();
@@ -114,6 +115,7 @@ namespace BLL.BussinessLogics
                 .Where(u => (u.FullName.Contains(name)) && (u.Position.Name != "admin"))
                 .Select(u => new PageModel
                 {
+                    UserId = u.UserId,
                     DateCreate = u.DateCreate,
                     Email = u.Email,
                     Position = u.Position.Name,

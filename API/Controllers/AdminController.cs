@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace API.Controllers
 {
-    [Route("mng")]
+    [Route("ad")]
     [UserAuthorizeFilter("admin")]
     public class AdminController : BaseController
     {
@@ -55,7 +55,7 @@ namespace API.Controllers
             }
             if (INDEX == null || INDEX.Length <= 0)
             {
-                return BadRequest("Please input sort Criteria");
+                INDEX = "date";
             }
 
             var apm = new AdminPageModel();
@@ -81,7 +81,7 @@ namespace API.Controllers
             var apm = new AdminPageModel();
             var paging = new Paging();
             List<PageModel> pageModels = _adminLogic
-                .GetSearchPageModelList(pageItems, page, search);
+                .GetPageModelSearchList(pageItems, page, search);
 
             if (pageModels.Count == 0)
             {
@@ -109,12 +109,15 @@ namespace API.Controllers
             #endregion
             try
             {
-
                 response = _userLogic.ReadFileUrlAsync(Id);
             }
             catch (NullReferenceException nre)
             {
                 return NotFound(nre);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
             }
 
             return Ok(response);

@@ -31,7 +31,7 @@ namespace BLL.BussinessLogics
                 .SingleOrDefault(u => u.Email == user.Email && u.ConfirmationCode == user.ConfirmationCode);
             if (loggedUser == null)
             {
-                throw new ArgumentNullException("Incorrect Email or Password");
+                throw new Exception("Incorrect Email or Password");
             }
 
             string positionName = _uow

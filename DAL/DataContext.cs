@@ -18,7 +18,6 @@ namespace DAL
             modelBuilder.Entity<Position>()
                 .HasIndex(p => p.Name)
                 .IsUnique();
-            modelBuilder.Entity<Cv>().ToTable("Cvs");
         }
         public DbSet<User> Users { get; set; }
         public DbSet<Position> Positions { get; set; }

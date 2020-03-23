@@ -38,6 +38,7 @@ namespace API.Controllers
         /// <response code="200">List of challenge</response>
         /// <response code="400">Not have enough infomation</response>
         /// <response code="401">Unauthorize</response>
+        /// <response code="403">Forbidden from resource</response>
         /// <response code="404">Empty challenge list</response>
         /// <response code="500">Internal Error</response>
         [HttpGet]
@@ -45,6 +46,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         #endregion
@@ -227,6 +229,8 @@ namespace API.Controllers
             try
             {
                 response = _userLogic.ReadFileUrlAsync(userProfile.Id);
+                if (response == null)
+                    return NotFound("User does not have Cv yet");
             }
             catch (NullReferenceException nre)
             {

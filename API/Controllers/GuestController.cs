@@ -91,12 +91,12 @@ namespace API.Controllers
             //  Exception When User Is Not Found
             catch (ArgumentNullException arn)
             {
-                return BadRequest(arn.Message + "\n" + arn.StackTrace);
+                return BadRequest(arn.Message);
             }
             //  Exception When Position Assigned To User Is Not Found
             catch (ArgumentException ar)
             {
-                return BadRequest(ar.Message + "\n" + ar.StackTrace);
+                return BadRequest(ar.Message);
             }
 
             return Ok(token);

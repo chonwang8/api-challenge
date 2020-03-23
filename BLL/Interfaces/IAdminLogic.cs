@@ -7,6 +7,6 @@ namespace BLL.Interfaces
     {
         List<PageModel> GetPageModelList();
         List<PageModel> GetPageModelSortList(int pageItems, int page, string INDEX);
-        List<PageModel> GetSearchPageModelList(int pageItems, int page, string name);
+        List<PageModel> GetPageModelSearchList(int pageItems, int page, string name);
     }
 }
