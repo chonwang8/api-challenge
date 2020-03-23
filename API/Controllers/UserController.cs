@@ -25,12 +25,9 @@ namespace API.Controllers
     public class UserController : BaseController
     {
         #region classes and contructor
-        private readonly IUserLogic _userLogic;
-        protected readonly IOptions<AppSetting> _options;
-        public UserController(IUserLogic userLogic, IOptions<AppSetting> options)
+        public UserController(IUserLogic userLogic
+            , IOptions<AppSetting> options) : base(userLogic, options)
         {
-            _userLogic = userLogic;
-            _options = options;
         }
         #endregion
 
@@ -73,6 +70,8 @@ namespace API.Controllers
             }
             return Ok(challenges);
         }
+
+
 
         /// <summary>
         /// View Challenge's context
@@ -119,6 +118,8 @@ namespace API.Controllers
             };
             return Ok(challenge);
         }
+
+
 
         /// <summary>
         /// Upload Cv file 
@@ -182,6 +183,8 @@ namespace API.Controllers
             return status ? Ok("success")
                           : StatusCode((int)HttpStatusCode.InternalServerError, $"error uploading {fileName}");
         }
+
+
 
         /// <summary>
         /// Download CV file

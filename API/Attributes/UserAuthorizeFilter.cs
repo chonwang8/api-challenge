@@ -16,11 +16,18 @@ namespace API.Attributes
 
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var email = context.HttpContext.User.Claims.FirstOrDefault(z => z.Type == "user_email").Value;
-            var position = context.HttpContext.User.Claims.FirstOrDefault(z => z.Type == "position").Value;
-            if (!_permission.Contains(position))
+            try
             {
-                context.Result = new ForbidResult();
+                var email = context.HttpContext.User.Claims.FirstOrDefault(z => z.Type == "user_email").Value;
+                var position = context.HttpContext.User.Claims.FirstOrDefault(z => z.Type == "position").Value;
+                if (!_permission.Contains(position))
+                {
+                    context.Result = new ForbidResult();
+                }
+            }
+            catch (NullReferenceException)
+            {
+                context.Result = new ForbidResult("Invalid Operation : no token");
             }
 
         }

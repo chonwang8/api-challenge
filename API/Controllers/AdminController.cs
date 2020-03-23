@@ -11,21 +11,15 @@ using System.Linq;
 
 namespace API.Controllers
 {
+    [Route("mng")]
     [UserAuthorizeFilter("admin")]
     public class AdminController : BaseController
     {
-        #region classes and constructor
-        private const string DATE = "date";
-        private const string EMAIL = "email";
-        private const string POSITION = "position";
-        private readonly IHttpContextAccessor _httpContext;
-        private readonly IAdminLogic _adminLogic;
-        private readonly IUserLogic _userLogic;
-        public AdminController(IHttpContextAccessor httpContext, IAdminLogic adminLogic, IUserLogic userLogic)
+        #region Constructor that takes AdminLogic, UserLogic, IHttpContextAccessor
+        public AdminController(IAdminLogic adminLogic,
+            IUserLogic userLogic,
+            IHttpContextAccessor httpContext) :base(adminLogic, userLogic, httpContext)
         {
-            _httpContext = httpContext;
-            _adminLogic = adminLogic;
-            _userLogic = userLogic;
         }
         #endregion
 

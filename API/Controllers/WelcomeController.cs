@@ -8,12 +8,9 @@ namespace API.Controllers
     [Route("start")]
     public class WelcomeController : BaseController
     {
-        #region classes and constructor
-        protected readonly IOptions<IndexPage> _indexPage;
-
-        public WelcomeController(IOptions<IndexPage> indexPage)
+        #region Constructor that takes IndexPage
+        public WelcomeController(IOptions<IndexPage> indexPage) : base(indexPage)
         {
-            _indexPage = indexPage;
         }
         #endregion
 
@@ -38,12 +35,9 @@ namespace API.Controllers
     [Route("help")]
     public class HelpController : BaseController
     {
-        #region classes and constructor
-        protected readonly IOptions<HelpPage> _helpPage;
-
-        public HelpController(IOptions<HelpPage> helpPage)
+        #region Constructor that takes HelpPage
+        public HelpController(IOptions<HelpPage> helpPage) : base (helpPage)
         {
-            _helpPage = helpPage;
         }
         #endregion
 
@@ -68,31 +62,5 @@ namespace API.Controllers
                 + contentList.ToString());
         }
 
-
-        [HttpGet("login")]
-        public IActionResult LoginHelp()
-        {
-            string registerFormat = "POST /Login" +
-                "\n{" +
-                "\n    \"email\": \"string\"" +
-                "\n    \"confirmationCode\": \"string\"" +
-                "\n}";
-            return Ok(registerFormat);
-        }
-
-
-        [HttpGet("register")]
-        public IActionResult RegisterHelp()
-        {
-            string loginFormat = "Positions we are hiring : Junior, Mid-level, Senior" +
-                "\n\nPOST /Register" +
-                "\n{" +
-                "\n    \"phone\": \"string\"" +
-                "\n    \"fullName\": \"string\"" +
-                "\n    \"positionName\": \"string\"" +
-                "\n    \"email\": \"string\"" +
-                "\n}";
-            return Ok(loginFormat);
-        }
     }
 }
