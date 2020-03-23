@@ -1,4 +1,5 @@
 ﻿using BLL.Helpers;
+using BLL.Interfaces;
 using BLL.Models;
 using DAL.Entities;
 using DAL.UnitOfWorks;
@@ -32,7 +33,7 @@ namespace BLL.BussinessLogics
             {
                 throw new ArgumentNullException("Incorrect Email or Password");
             }
-            
+
             string positionName = _uow
                 .GetRepository<Position>()
                 .GetAll()
@@ -44,6 +45,7 @@ namespace BLL.BussinessLogics
 
             UserProfile userProfile = new UserProfile
             {
+                Id = loggedUser.UserId,
                 Email = loggedUser.Email,
                 PositionName = positionName
             };
@@ -55,18 +57,32 @@ namespace BLL.BussinessLogics
 
         public UserLogin Register(UserRegister user)
         {
-            if (user == null)
+            Guid positionId = new Guid();
+            if (user == null || user.PositionName.ToLower() == "admin")
             {
                 throw new ArgumentNullException("Invalid Acccount Input");
             }
-            Guid positionId = _uow
+
+            try
+            {
+                positionId = _uow
                 .GetRepository<Position>()
                 .GetAll()
                 .SingleOrDefault(p => p.Name == user.PositionName).PositionId;
-            if (positionId == null)
-            {
-                throw new ArgumentException("Invalid Position");
             }
+            catch (InvalidOperationException ioe)
+            {
+                throw ioe;
+            }
+            catch (NullReferenceException nre)
+            {
+                throw nre;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
 
             string newCofimationCode = new ConfirmationCodeManager().GenerateConfimationCode();
 
@@ -78,15 +94,16 @@ namespace BLL.BussinessLogics
                 Phone = user.Phone,
                 PositionId = positionId,
                 UserId = Guid.NewGuid(),
-                ConfirmationCode = newCofimationCode
+                ConfirmationCode = newCofimationCode,
+                DateCreate = DateTime.Now
             };
 
             _uow.GetRepository<User>().Insert(newUser);
             _uow.Commit();
-            return new UserLogin 
-            { 
-                Email = newUser.Email, 
-                ConfirmationCode = newUser.ConfirmationCode 
+            return new UserLogin
+            {
+                Email = newUser.Email,
+                ConfirmationCode = newUser.ConfirmationCode
             };
         }
     }

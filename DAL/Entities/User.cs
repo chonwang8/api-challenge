@@ -10,12 +10,16 @@ namespace DAL.Entities
 
         [Required]
         public string Email { get; set; }
-        public string Phone { get; set; }
-        public string FullName { get; set; }
-
         [Required]
         public string ConfirmationCode { get; set; }
+
+        public string Phone { get; set; }
+        public string FullName { get; set; }
+        public DateTime DateCreate { get; set; }
+
         public Guid PositionId { get; set; }
         public Position Position { get; set; }
+
+        public Cv Cv { get; set; }
     }
 }

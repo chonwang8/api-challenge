@@ -1,7 +1,5 @@
 ﻿
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace BLL.Models
 {
@@ -26,10 +24,11 @@ namespace BLL.Models
         public string Phone { get; set; }
         public string FullName { get; set; }
         public string PositionName { get; set; }
+
     }
-    public class UserProfile
+    public class UserProfile : UserModel
     {
-        public string Email { get; set; }
+        public Guid Id { get; set; }
         public string PositionName { get; set; }
     }
 

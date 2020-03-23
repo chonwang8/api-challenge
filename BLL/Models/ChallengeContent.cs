@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace BLL.Models
+﻿namespace BLL.Models
 {
     public class ChallengeContent
     {

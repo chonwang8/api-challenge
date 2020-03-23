@@ -1,10 +1,12 @@
 using BLL.BussinessLogics;
 using BLL.Helpers;
+using BLL.Interfaces;
 using DAL;
 using DAL.UnitOfWorks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -82,6 +84,8 @@ namespace API
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserLogic, UserLogic>();
             services.AddScoped<IGuestLogic, GuestLogic>();
+            services.AddScoped<IAdminLogic, AdminLogic>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             #endregion
 
             #region Swagger
@@ -118,6 +122,7 @@ namespace API
             });
 
             #endregion
+
             services.AddControllers();
         }
 

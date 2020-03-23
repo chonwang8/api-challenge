@@ -1,17 +1,10 @@
-﻿using Amazon;
-using Amazon.S3;
-using Amazon.S3.Transfer;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.IO;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace API
 {
-    [Route("api/[controller]")]
+    [Route("base")]
     [ApiController]
     public class BaseController : ControllerBase
     {
-        
     }
 }
