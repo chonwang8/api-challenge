@@ -102,7 +102,7 @@ namespace BLL.BussinessLogics
                 {
                     return false;
                 }
-
+                await fileTransferUtility.UploadAsync(fileUploadRequest);
                 #region CvTableInsert
                 try
                 {
@@ -110,7 +110,6 @@ namespace BLL.BussinessLogics
                     var existCv = _uow.GetRepository<Cv>().GetAll().FirstOrDefault(c => c.UserId == userProfile.Id);
                     var cv = new Cv
                     {
-                        CvId = Guid.NewGuid(),
                         UserId = userProfile.Id,
                         FileName = cvModel.FileName,
                         UploadDate = cvModel.UploadDate,
@@ -132,9 +131,9 @@ namespace BLL.BussinessLogics
                     throw pgs;
                 }
                 #endregion
-
-                await fileTransferUtility.UploadAsync(fileUploadRequest);
                 return true;
+
+
             }
             catch (AmazonS3Exception)
             {
