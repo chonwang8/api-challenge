@@ -3,9 +3,11 @@ using BLL.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 
 namespace API
 {
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class BaseController : ControllerBase
     {
@@ -13,6 +15,9 @@ namespace API
         protected const string DATE = "date";
         protected const string EMAIL = "email";
         protected const string POSITION = "position";
+
+
+        protected ClaimsIdentity identity;
 
         protected readonly IGuestLogic _logic;
         protected readonly IAdminLogic _adminLogic;
@@ -22,18 +27,15 @@ namespace API
         protected readonly IOptions<AppSetting> _options;
         protected readonly IHttpContextAccessor _httpContext;
 
+
         public BaseController(IGuestLogic logic)
         {
             _logic = logic;
         }
 
-        public BaseController(IOptions<HelpPage> helpPage)
+        public BaseController(IOptions<HelpPage> helpPage, IOptions<IndexPage> indexPage)
         {
             _helpPage = helpPage;
-        }
-
-        public BaseController(IOptions<IndexPage> indexPage)
-        {
             _indexPage = indexPage;
         }
 
@@ -45,11 +47,11 @@ namespace API
 
         
         //  User(s):
-        //  UserController
+        //  UserController, ChallengesController
         public BaseController(IUserLogic userLogic, IOptions<AppSetting> options)
         {
             _userLogic = userLogic;
-            _options = options;
+            _options = options; 
         }
 
 

@@ -5,11 +5,10 @@ using Microsoft.Extensions.Options;
 
 namespace API.Controllers
 {
-    [Route("start")]
     public class WelcomeController : BaseController
     {
         #region Constructor that takes IndexPage
-        public WelcomeController(IOptions<IndexPage> indexPage) : base(indexPage)
+        public WelcomeController(IOptions<HelpPage> helpPage, IOptions<IndexPage> indexPage) : base(helpPage,indexPage)
         {
         }
         #endregion
@@ -25,21 +24,11 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         #endregion
-        public IActionResult Start()
+        public IActionResult Index()
         {
             var index = _indexPage.Value;
             return Ok(index.Message);
         }
-    }
-
-    [Route("help")]
-    public class HelpController : BaseController
-    {
-        #region Constructor that takes HelpPage
-        public HelpController(IOptions<HelpPage> helpPage) : base (helpPage)
-        {
-        }
-        #endregion
 
         /// <summary>
         /// View Help page
@@ -61,6 +50,6 @@ namespace API.Controllers
                 + helplist.Guildline + "\n\n"
                 + contentList.ToString());
         }
-
     }
+
 }

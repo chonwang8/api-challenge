@@ -9,7 +9,6 @@ using System;
 
 namespace API.Controllers
 {
-    [Route("login")]
     public class GuestLoginController : BaseController
     {
         #region Constructor that takes GuestLogic, HelpPage
@@ -104,8 +103,8 @@ namespace API.Controllers
 
 
 
-        [HttpGet("help")]
-        public IActionResult LoginHelp()
+        [HttpGet]
+        public IActionResult Help()
         {
             string registerFormat = "POST /Login" +
                 "\n{" +
@@ -116,7 +115,6 @@ namespace API.Controllers
         }
     }
 
-    [Route("register")]
     public class GuessRegisterController : BaseController
     {
         #region Constructor that takes GuestLogic, HelpPage
@@ -208,8 +206,8 @@ namespace API.Controllers
 
 
 
-        [HttpGet("help")]
-        public IActionResult RegisterHelp()
+        [HttpGet]
+        public IActionResult Help()
         {
             string loginFormat = "Positions we are hiring : Junior, Mid-level, Senior" +
                 "\n\nPOST /Register" +

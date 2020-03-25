@@ -9,7 +9,6 @@ using System.Collections.Generic;
 
 namespace API.Controllers
 {
-    [Route("ad")]
     [UserAuthorizeFilter("admin")]
     public class AdminController : BaseController
     {
@@ -21,8 +20,23 @@ namespace API.Controllers
         }
         #endregion
 
+
+        /// <summary>
+        /// User List order by Create date
+        /// </summary>
+        /// <returns>Create date</returns>
+        /// <response code="200">return list</response>
+        /// <response code="400">Not have enough infomation</response>
+        /// <response code="401">Unauthorize</response>
+        /// <response code="404">Not found any user</response>
+        /// <response code="500">Internal Error</response>
         [HttpGet]
-        public IActionResult GetUserList()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult GetUserListOrderByDate()
         {
             var apm = new AdminPageModel();
             List<PageModel> pageModels = _adminLogic.GetPageModelList();
@@ -44,7 +58,20 @@ namespace API.Controllers
             return Ok(apm);
         }
 
-        [HttpGet("sort")]
+        /// <summary>
+        /// User List order by index
+        /// </summary>
+        /// <response code="200">return list</response>
+        /// <response code="400">Not have enough infomation</response>
+        /// <response code="401">Unauthorize</response>
+        /// <response code="404">Not found any user</response>
+        /// <response code="500">Internal Error</response>
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetUserListOrderByIndex(string pageItems, string page, string INDEX)
         {
             int PageItems, Page;
@@ -84,7 +111,21 @@ namespace API.Controllers
             return Ok(apm);
         }
 
-        [HttpGet("filter")]
+        /// <summary>
+        /// User List order by Position
+        /// </summary>
+        /// <returns>Create Position</returns>
+        /// <response code="200">return list</response>
+        /// <response code="400">Not have enough infomation</response>
+        /// <response code="401">Unauthorize</response>
+        /// <response code="404">Not found any user</response>
+        /// <response code="500">Internal Error</response>
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetUserListFilterByPosition(string pageItems, string page, string INDEX, string position)
         {
             int PageItems, Page;
@@ -129,7 +170,20 @@ namespace API.Controllers
             return Ok(apm);
         }
 
-        [HttpGet("search")]
+        /// <summary>
+        /// Search list of user with name similar to
+        /// </summary>
+        /// <response code="200">return list</response>
+        /// <response code="400">Not have enough infomation</response>
+        /// <response code="401">Unauthorize</response>
+        /// <response code="404">Not found any user</response>
+        /// <response code="500">Internal Error</response>
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetUserListSearchByName(string pageItems, string page, string search)
         {
             int PageItems, Page;
@@ -171,7 +225,7 @@ namespace API.Controllers
             return Ok(apm);
         }
 
-        [HttpGet("cv")]
+        [HttpGet]
         public IActionResult GetUserCv(Guid Id)
         {
             // Check UserID Input

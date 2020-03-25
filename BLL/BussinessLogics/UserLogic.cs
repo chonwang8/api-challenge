@@ -110,6 +110,7 @@ namespace BLL.BussinessLogics
                     var existCv = _uow.GetRepository<Cv>().GetAll().FirstOrDefault(c => c.UserId == userProfile.Id);
                     var cv = new Cv
                     {
+                        CvId = Guid.NewGuid(),
                         UserId = userProfile.Id,
                         FileName = cvModel.FileName,
                         UploadDate = cvModel.UploadDate,

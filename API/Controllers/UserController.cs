@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 
 namespace API.Controllers
 {
-    [Route("user")]
     [UserAuthorizeFilter("junior, mid-level, senior")]
     public class UserController : BaseController
     {
@@ -42,7 +41,7 @@ namespace API.Controllers
         /// <response code="400">Not have enough infomation</response>
         /// <response code="401">Unauthorize</response>
         /// <response code="500">Internal Error</response>
-        [HttpPost("cv")]
+        [HttpPost]
         #region repCode 200 400 401 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -51,15 +50,9 @@ namespace API.Controllers
         #endregion
         public async Task<IActionResult> UploadCV(IFormFile file)
         {
-            ClaimsIdentity identity = HttpContext.User.Identity as ClaimsIdentity;
-            UserProfile userProfile = new UserProfile();
-            if (identity != null)
-            {
-                IEnumerable<Claim> claims = identity.Claims;
-                userProfile.Email = claims.FirstOrDefault(c => c.Type == "user_email").Value;
-                userProfile.Id = Guid.Parse(claims.FirstOrDefault(c => c.Type == "user_id").Value);
-            }
-
+            UserClaimInfo claimInfo = new UserClaimInfo();
+            UserProfile userProfile = claimInfo.GetProfile(HttpContext.User.Identity as ClaimsIdentity);
+            
             if (userProfile.Email == null)
             {
                 return BadRequest("User not have pemission to access to this challenge");
@@ -107,7 +100,7 @@ namespace API.Controllers
         /// <response code="401">Unauthorize</response>
         /// <response code="404">File Not Found</response>
         /// <response code="500">Internal Error</response>
-        [HttpGet("cvUrl")]
+        [HttpGet]
         #region repCode 200 400 401 404 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -117,15 +110,10 @@ namespace API.Controllers
         #endregion
         public IActionResult GetUserCvUrl()
         {
-            ClaimsIdentity identity = HttpContext.User.Identity as ClaimsIdentity;
-            UserProfile userProfile = new UserProfile();
+            UserClaimInfo claimInfo = new UserClaimInfo();
+            UserProfile userProfile = claimInfo.GetProfile(HttpContext.User.Identity as ClaimsIdentity);
             #region Check User
-            if (identity != null)
-            {
-                IEnumerable<Claim> claims = identity.Claims;
-                userProfile.Email = claims.FirstOrDefault(c => c.Type == "user_email").Value;
-                userProfile.Id = Guid.Parse(claims.FirstOrDefault(c => c.Type == "user_id").Value);
-            }
+            
             if (userProfile.Id == null)
             {
                 return BadRequest("Missing User Id");
@@ -142,22 +130,23 @@ namespace API.Controllers
                 if (response == null)
                     return NotFound("User does not have Cv yet");
             }
-            catch (NullReferenceException nre)
+            catch (NullReferenceException)
             {
-                return NotFound(nre);
+                return NotFound("Cv not found");
             }
 
             return Ok(response);
         }
     }
 
-    [Route("challenge")]
+
+
     [UserAuthorizeFilter("junior, mid-level, senior")]
     public class ChallengesController : BaseController
     {
         #region classes and contructor
-        public ChallengesController(IUserLogic userLogic
-            , IOptions<AppSetting> options) : base(userLogic, options)
+        public ChallengesController(IUserLogic userLogic, IOptions<AppSetting> options) 
+            : base(userLogic, options)
         {
         }
         #endregion
@@ -184,14 +173,8 @@ namespace API.Controllers
         #endregion
         public IActionResult ViewChallengeList()
         {
-            ClaimsIdentity identity = HttpContext.User.Identity as ClaimsIdentity;
-            UserProfile userProfile = new UserProfile();
-            if (identity != null)
-            {
-                IEnumerable<Claim> claims = identity.Claims;
-                userProfile.Email = claims.FirstOrDefault(c => c.Type == "user_email").Value;
-                userProfile.PositionName = claims.FirstOrDefault(c => c.Type == "position").Value;
-            }
+            UserClaimInfo claimInfo = new UserClaimInfo();
+            UserProfile userProfile = claimInfo.GetProfile(HttpContext.User.Identity as ClaimsIdentity);
             if (userProfile.Email == null || userProfile.PositionName == null)
             {
                 return BadRequest("User missing some vital infomation to use this feature");
@@ -226,14 +209,8 @@ namespace API.Controllers
         #endregion
         public IActionResult GetChallengeDetail(Guid id)
         {
-            ClaimsIdentity identity = HttpContext.User.Identity as ClaimsIdentity;
-            UserProfile userProfile = new UserProfile();
-            if (identity != null)
-            {
-                IEnumerable<Claim> claims = identity.Claims;
-                userProfile.PositionName = claims.FirstOrDefault(c => c.Type == "position").Value;
-            }
-
+            UserClaimInfo claimInfo = new UserClaimInfo();
+            UserProfile userProfile = claimInfo.GetProfile(HttpContext.User.Identity as ClaimsIdentity);
             if (userProfile.PositionName == null)
             {
                 return BadRequest("User not have pemission to access to this challenge");
