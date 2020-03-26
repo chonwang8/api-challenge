@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace API
 {
-    [Route("api/[controller]/[action]")]
+    [Route("[controller]")]
     [ApiController]
     public class BaseController : ControllerBase
     {
@@ -31,6 +31,16 @@ namespace API
         public BaseController(IGuestLogic logic)
         {
             _logic = logic;
+        }
+
+        public BaseController(IOptions<HelpPage> helpPage)
+        {
+            _helpPage = helpPage;
+        }
+
+        public BaseController(IOptions<IndexPage> indexPage)
+        {
+            _indexPage = indexPage;
         }
 
         public BaseController(IOptions<HelpPage> helpPage, IOptions<IndexPage> indexPage)

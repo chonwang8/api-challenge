@@ -3,6 +3,7 @@ using BLL.Interfaces;
 using BLL.Models;
 using DAL.Entities;
 using DAL.UnitOfWorks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
@@ -11,23 +12,27 @@ namespace BLL.BussinessLogics
 {
     public class GuestLogic : IGuestLogic
     {
-        #region OnCall
+        #region Classes and Constructor
         protected readonly IUnitOfWork _uow;
         protected readonly IOptions<AppSetting> _options;
+        protected readonly IOptions<AdminGuide> _help;
 
-        public GuestLogic(IUnitOfWork uow, IOptions<AppSetting> options)
+        public GuestLogic(IUnitOfWork uow, IOptions<AppSetting> options, IOptions<AdminGuide> help)
         {
             _uow = uow;
             _options = options;
+            _help = help;
         }
         #endregion
 
 
         public string Login(UserLogin user)
         {
+            TokenManager tokenManager = new TokenManager(_options);
             User loggedUser = _uow
                 .GetRepository<User>()
                 .GetAll()
+                .Include(u => u.Position)
                 .SingleOrDefault(u => u.Email == user.Email && u.ConfirmationCode == user.ConfirmationCode);
             if (loggedUser == null)
             {
@@ -50,9 +55,11 @@ namespace BLL.BussinessLogics
                 PositionName = positionName
             };
 
-            TokenManager tokenManager = new TokenManager(_options);
             string tokenString = tokenManager.CreateAccessToken(userProfile);
-            return tokenString;
+            if (loggedUser.Position.Name == "admin")
+                return tokenString + "\n\n" + _help.Value.Message;
+            else
+                return tokenString;
         }
 
         public UserLogin Register(UserRegister user)

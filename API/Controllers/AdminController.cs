@@ -73,7 +73,7 @@ namespace API.Controllers
         /// <response code="401">Unauthorize</response>
         /// <response code="404">Not found any user</response>
         /// <response code="500">Internal Error</response>
-        [HttpGet]
+        [HttpGet("sort")]
         #region RepCode 200 400 401 404 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -145,7 +145,7 @@ namespace API.Controllers
         /// <response code="401">Unauthorize</response>
         /// <response code="404">Not found any user</response>
         /// <response code="500">Internal Error</response>
-        [HttpGet]
+        [HttpGet("role")]
         #region RepCode 200 400 401 404 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -232,7 +232,7 @@ namespace API.Controllers
         /// <response code="401">Unauthorize</response>
         /// <response code="404">Not found any user</response>
         /// <response code="500">Internal Error</response>
-        [HttpGet]
+        [HttpGet("name")]
         #region RepCode 200 400 401 404 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -299,7 +299,7 @@ namespace API.Controllers
         /// <response code="401">Unauthorize</response>
         /// <response code="404">File Not Found</response>
         /// <response code="500">Internal Error</response>
-        [HttpGet]
+        [HttpGet("cv")]
         #region repCode 200 400 401 404 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

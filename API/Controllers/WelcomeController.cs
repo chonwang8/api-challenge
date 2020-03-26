@@ -5,10 +5,10 @@ using Microsoft.Extensions.Options;
 
 namespace API.Controllers
 {
-    public class WelcomeController : BaseController
+    public class IndexController : BaseController
     {
         #region Constructor that takes IndexPage
-        public WelcomeController(IOptions<HelpPage> helpPage, IOptions<IndexPage> indexPage) : base(helpPage,indexPage)
+        public IndexController(IOptions<IndexPage> indexPage) : base(indexPage)
         {
         }
         #endregion
@@ -29,6 +29,17 @@ namespace API.Controllers
             var index = _indexPage.Value;
             return Ok(index.Message);
         }
+    }
+
+
+    public class HelpController : BaseController
+    {
+        #region Constructor that takes HelpPage
+        public HelpController(IOptions<HelpPage> helpPage) : base(helpPage)
+        {
+        }
+        #endregion
+
 
         /// <summary>
         /// View Help page

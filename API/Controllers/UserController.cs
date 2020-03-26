@@ -42,7 +42,7 @@ namespace API.Controllers
         /// <response code="400">Not have enough infomation</response>
         /// <response code="401">Unauthorize</response>
         /// <response code="500">Internal Error</response>
-        [HttpPost]
+        [HttpPost("upload")]
         #region repCode 200 400 401 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -101,7 +101,7 @@ namespace API.Controllers
         /// <response code="401">Unauthorize</response>
         /// <response code="404">File Not Found</response>
         /// <response code="500">Internal Error</response>
-        [HttpGet]
+        [HttpGet("cv")]
         #region repCode 200 400 401 404 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -109,7 +109,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         #endregion
-        public IActionResult GetUserCvUrl()
+        public IActionResult GetCv()
         {
             UserClaimInfo claimInfo = new UserClaimInfo();
             UserProfile userProfile = claimInfo.GetProfile(HttpContext.User.Identity as ClaimsIdentity);
@@ -171,7 +171,7 @@ namespace API.Controllers
         /// <response code="403">Forbidden from resource</response>
         /// <response code="404">Empty challenge list</response>
         /// <response code="500">Internal Error</response>
-        [HttpGet]
+        [HttpGet("list")]
         #region RepCode 200 400 401 404 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

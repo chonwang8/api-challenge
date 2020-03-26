@@ -9,15 +9,27 @@ using System;
 
 namespace API.Controllers
 {
-    public class GuestLoginController : BaseController
+    [AllowAnonymous]
+    public class LoginController : BaseController
     {
         #region Constructor that takes GuestLogic, HelpPage
-
-        public GuestLoginController(IGuestLogic guestLogic,
-            IOptions<HelpPage> helpPage) : base(guestLogic, helpPage)
+        IOptions<LoginGuide> _loginGuide;
+        public LoginController(IGuestLogic guestLogic,
+            IOptions<HelpPage> helpPage,
+            IOptions<LoginGuide> login) : base(guestLogic, helpPage)
         {
+            _loginGuide = login;
         }
         #endregion
+
+
+
+        [HttpGet]
+        public IActionResult Help()
+        {
+            string login = _loginGuide.Value.Message;
+            return Ok(login);
+        }
 
 
 
@@ -54,9 +66,7 @@ namespace API.Controllers
                 Email = email.ToLower(),
                 ConfirmationCode = confirmationCode,
             };
-
-            //  Check For Null Inputs
-            string token = "";
+            string response = "";
 
             //  Check For Bad Inputs
             if (user.Email == null || user.ConfirmationCode == null)
@@ -78,11 +88,11 @@ namespace API.Controllers
 
             try
             {
-                token = _logic.Login(user);
+                response = _logic.Login(user);
                 //  If token was an empty string, it mean username or password were incorrect
                 //  In theory it should not reach this if-block, instead throws ArgumentNullException
                 //  This is here just for safety measure
-                if (token.Length == 0)
+                if (response.Length == 0)
                 {
                     return NotFound("Wrong Email or Confimation code");
                 }
@@ -98,57 +108,47 @@ namespace API.Controllers
                 return BadRequest(ar.Message);
             }
 
-            return Ok(token);
+            return Ok(response);
         }
+    }
+
+    [AllowAnonymous]
+    public class RegisterController : BaseController
+    {
+        #region Constructor that takes GuestLogic, HelpPage
+        IOptions<RegisterGuide> _registerGuide;
+        public RegisterController(IGuestLogic logic,
+            IOptions<HelpPage> helpPage,
+            IOptions<RegisterGuide> register) : base(logic, helpPage)
+        {
+            _registerGuide = register;
+        }
+        #endregion
 
 
 
         [HttpGet]
         public IActionResult Help()
         {
-            string registerFormat = "POST /Login" +
-                "\n{" +
-                "\n    \"email\": \"string\"" +
-                "\n    \"confirmationCode\": \"string\"" +
-                "\n}";
-            return Ok(registerFormat);
+            string loginFormat = _registerGuide.Value.Message;
+            return Ok(loginFormat);
         }
-    }
-
-    public class GuessRegisterController : BaseController
-    {
-        #region Constructor that takes GuestLogic, HelpPage
-
-        public GuessRegisterController(IGuestLogic logic,
-            IOptions<HelpPage> helpPage) : base (logic, helpPage)
-        {
-        }
-        #endregion
 
 
 
         /// <summary>
         /// Register with Email - Phone - FullName - PositionName
         /// </summary>
-        /// 
         /// <remarks>
-        /// 
         /// Sample Request:
-        /// 
-        /// 
         ///     {
         ///         "Email" : "name@name.com",
         ///         "Phone" : "123456"
         ///         "FullName" : "John Doe"
         ///         "PositionName" : "Junior"
         ///     }
-        ///     
         /// </remarks>
-        /// 
-        /// 
-        /// 
         /// <returns>ConfirmationCode</returns>
-        /// 
         /// <response code="200">Successfully registered. All info valid.</response>
         /// <response code="400">Invalid Input</response>
         /// <response code="404">Server Denied Access</response>
@@ -206,18 +206,5 @@ namespace API.Controllers
 
 
 
-        [HttpGet]
-        public IActionResult Help()
-        {
-            string loginFormat = "Positions we are hiring : Junior, Mid-level, Senior" +
-                "\n\nPOST /Register" +
-                "\n{" +
-                "\n    \"phone\": \"string\"" +
-                "\n    \"fullName\": \"string\"" +
-                "\n    \"positionName\": \"string\"" +
-                "\n    \"email\": \"string\"" +
-                "\n}";
-            return Ok(loginFormat);
-        }
     }
 }

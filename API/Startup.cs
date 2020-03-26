@@ -45,6 +45,18 @@ namespace API
             // configure startup page
             var indexPage = Configuration.GetSection("IndexContent");
             services.Configure<IndexPage>(indexPage);
+
+            // configure admin guidance
+            var adminGuide = Configuration.GetSection("AdminGuide");
+            services.Configure<AdminGuide>(adminGuide);
+
+            // configure admin guidance
+            var login = Configuration.GetSection("LoginGuide");
+            services.Configure<LoginGuide>(login);
+
+            // configure admin guidance
+            var register = Configuration.GetSection("RegisterGuide");
+            services.Configure<RegisterGuide>(register);
             #endregion
 
             #region JWT Auth
@@ -143,7 +155,7 @@ namespace API
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                c.RoutePrefix = string.Empty;
+                c.RoutePrefix = "admin/secret/swaggerui";
             });
 
             app.UseAuthentication();
