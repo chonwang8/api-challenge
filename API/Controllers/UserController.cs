@@ -1,4 +1,5 @@
-﻿using API.Attributes;
+﻿using Amazon.S3;
+using API.Attributes;
 using BLL.BussinessLogics;
 using BLL.Helpers;
 using BLL.Interfaces;
@@ -130,9 +131,17 @@ namespace API.Controllers
                 if (response == null)
                     return NotFound("User does not have Cv yet");
             }
+            catch (AmazonS3Exception)
+            {
+                return BadRequest("Unable to retrieve file");
+            }
             catch (NullReferenceException)
             {
                 return NotFound("Cv not found");
+            }
+            catch (Exception)
+            {
+                return BadRequest("Error");
             }
 
             return Ok(response);

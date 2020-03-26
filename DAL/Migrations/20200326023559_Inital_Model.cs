@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DAL.Migrations
 {
-    public partial class Initial_Model : Migration
+    public partial class Inital_Model : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -66,13 +66,14 @@ namespace DAL.Migrations
                 name: "Cvs",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(nullable: false),
+                    CvId = table.Column<Guid>(nullable: false),
                     FileName = table.Column<string>(nullable: true),
-                    UploadDate = table.Column<DateTime>(nullable: false)
+                    UploadDate = table.Column<DateTime>(nullable: false),
+                    UserId = table.Column<Guid>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cvs", x => x.UserId);
+                    table.PrimaryKey("PK_Cvs", x => x.CvId);
                     table.ForeignKey(
                         name: "FK_Cvs_Users_UserId",
                         column: x => x.UserId,
@@ -85,6 +86,12 @@ namespace DAL.Migrations
                 name: "IX_Challenges_PositionId",
                 table: "Challenges",
                 column: "PositionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cvs_UserId",
+                table: "Cvs",
+                column: "UserId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Positions_Name",

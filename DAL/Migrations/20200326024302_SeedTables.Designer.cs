@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20200324044148_SeedTables")]
+    [Migration("20200326024302_SeedTables")]
     partial class SeedTables
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,7 +46,8 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("DAL.Entities.Cv", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("CvId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("FileName")
@@ -55,7 +56,13 @@ namespace DAL.Migrations
                     b.Property<DateTime>("UploadDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.HasKey("UserId");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CvId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Cvs");
                 });

@@ -1,4 +1,5 @@
-﻿using API.Attributes;
+﻿using Amazon.S3;
+using API.Attributes;
 using BLL.Helpers;
 using BLL.Interfaces;
 using BLL.Models;
@@ -22,7 +23,7 @@ namespace API.Controllers
 
 
         /// <summary>
-        /// User List order by Create date
+        /// Get list of candidates - Ordered by Candidate's Account Created Date
         /// </summary>
         /// <returns>Create date</returns>
         /// <response code="200">return list</response>
@@ -31,51 +32,61 @@ namespace API.Controllers
         /// <response code="404">Not found any user</response>
         /// <response code="500">Internal Error</response>
         [HttpGet]
+        #region RepCode 200 400 401 404 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetUserListOrderByDate()
+        #endregion
+        public IActionResult GetCandidates()
         {
             var apm = new AdminPageModel();
-            List<PageModel> pageModels = _adminLogic.GetPageModelList();
-            if (pageModels.Count == 0)
+            try
             {
-                return NotFound("There are no Candidates");
+                List<PageModel> pageModels = _adminLogic.GetPageModelList();
+                if (pageModels.Count == 0)
+                    return NotFound("There are no Candidates");
+                apm.UserList = pageModels;
+                return Ok(apm);
             }
-            apm.UserList = pageModels;
-
-            if (apm.UserList == null)
+            catch (Exception)
             {
-                return BadRequest();
+                return BadRequest("System Error: Please check inputs and connection");
             }
-            if (apm.UserList.Count <= 0)
-            {
-                return BadRequest("There are no Candidates");
-            }
-
-            return Ok(apm);
         }
 
+
+
         /// <summary>
-        /// User List order by index
+        /// Get list of candidates - Ordered by Input Value (string INDEX(nullable)). 
+        /// Available INDEXs : DateCreate, Email, FullName, Position
         /// </summary>
+        /// Sample Request:
+        ///     {
+        ///         "pageItems" : "1",
+        ///         "page" : "1",
+        ///         "INDEX" : "Email"
+        ///     }
         /// <response code="200">return list</response>
         /// <response code="400">Not have enough infomation</response>
         /// <response code="401">Unauthorize</response>
         /// <response code="404">Not found any user</response>
         /// <response code="500">Internal Error</response>
         [HttpGet]
+        #region RepCode 200 400 401 404 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetUserListOrderByIndex(string pageItems, string page, string INDEX)
+        #endregion
+        public IActionResult GetCandidatesSort(string pageItems, string page, string INDEX)
         {
             int PageItems, Page;
-
+            var apm = new AdminPageModel();
+            List<PageModel> pageModels = new List<PageModel>();
+            #region Set default paging values if null or empty input
             try
             {
                 PageItems = (pageItems == null || pageItems.Length <= 0) ? 40 : int.Parse(pageItems);
@@ -84,7 +95,6 @@ namespace API.Controllers
             {
                 return BadRequest("Number of Items per page must be in digits only");
             }
-
             try
             {
                 Page = (page == null || page.Length <= 0) ? 1 : int.Parse(page);
@@ -93,27 +103,42 @@ namespace API.Controllers
             {
                 return BadRequest("Page Number must be in digits only");
             }
+            #endregion
 
-            if (INDEX == null || INDEX.Length <= 0)
+            try
             {
-                INDEX = "date";
+                pageModels = _adminLogic.GetPageModelSortList(PageItems, Page, INDEX); if (pageModels.Count == 0)
+                {
+                    return NotFound("There are no user");
+                }
+                apm.UserList = pageModels;
+
+                return Ok(apm);
             }
-
-            var apm = new AdminPageModel();
-
-            List<PageModel> pageModels = _adminLogic.GetPageModelSortList(PageItems, Page, INDEX);
-
-            if (pageModels.Count == 0)
+            catch (NullReferenceException)
             {
-                return NotFound("There are no user");
+                return BadRequest("Error : Input Reference not found");
+
             }
-            apm.UserList = pageModels;
-            return Ok(apm);
+            catch (Exception)
+            {
+                return BadRequest("System Error: Please check inputs and connection");
+            }
         }
 
+
+
         /// <summary>
-        /// User List order by Position
+        /// Get list of candidates - Ordered by Input Value (string INDEX(nullable)). Available INDEXs : DateCreate, Email, FullName, Position
+        /// - Filtered by Input Position
         /// </summary>
+        /// Sample Request:
+        ///     {
+        ///         "pageItems" : "1",
+        ///         "page" : "1",
+        ///         "INDEX" : "Email",
+        ///         "Position" : "junior"
+        ///     }
         /// <returns>Create Position</returns>
         /// <response code="200">return list</response>
         /// <response code="400">Not have enough infomation</response>
@@ -121,15 +146,20 @@ namespace API.Controllers
         /// <response code="404">Not found any user</response>
         /// <response code="500">Internal Error</response>
         [HttpGet]
+        #region RepCode 200 400 401 404 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetUserListFilterByPosition(string pageItems, string page, string INDEX, string position)
+        #endregion
+        public IActionResult GetCandidatesSortFilter(string pageItems, string page, string INDEX, string POSITION)
         {
             int PageItems, Page;
+            var apm = new AdminPageModel();
 
+            #region Set default paging values if null or empty input
+            //  pageItems
             try
             {
                 PageItems = (pageItems == null || pageItems.Length <= 0) ? 40 : int.Parse(pageItems);
@@ -138,7 +168,7 @@ namespace API.Controllers
             {
                 return BadRequest("Number of Items per page must be in digits only");
             }
-
+            //  page
             try
             {
                 Page = (page == null || page.Length <= 0) ? 1 : int.Parse(page);
@@ -147,47 +177,75 @@ namespace API.Controllers
             {
                 return BadRequest("Page Number must be in digits only");
             }
+            #endregion
 
-            if (INDEX == null || INDEX.Length <= 0)
+            #region Check Candidate's position input
+            //  Check Valid Input
+            if (POSITION == null || POSITION.Length <= 0)
             {
-                INDEX = "date";
+                return BadRequest("Must input proper candidate's position");
             }
-
-            if (position == null || position.Length <= 0)
+            //  Check Valid Position Input
+            if (POSITION != "junior" && POSITION != "mid-level" && POSITION != "senior")
             {
-                return BadRequest("Must input proper position");
+                return BadRequest("Invalid Candidate's Position - only 'junior', 'mid-level', 'senior' allowed");
             }
+            #endregion
 
-            var apm = new AdminPageModel();
-
-            List<PageModel> pageModels = _adminLogic.GetPageModelFilterList(PageItems, Page, INDEX, position);
-
-            if (pageModels.Count == 0)
+            try
             {
-                return NotFound("There are no user");
+                List<PageModel> pageModels = _adminLogic.GetPageModelFilterList(PageItems, Page, INDEX, POSITION);
+                if (pageModels.Count == 0)
+                {
+                    return NotFound("There are no candidates in this position");
+                }
+                apm.UserList = pageModels;
+                return Ok(apm);
             }
-            apm.UserList = pageModels;
-            return Ok(apm);
+            catch (ArgumentException)
+            {
+                return BadRequest("Input Error");
+            }
+            catch (NullReferenceException)
+            {
+                return BadRequest("Error : Input Reference Not Found");
+            }
+            catch (Exception)
+            {
+                return BadRequest("System Error: Please check inputs and connection");
+            }
         }
 
+
+
         /// <summary>
-        /// Search list of user with name similar to
+        /// Search list of user with name similar to input
         /// </summary>
+        /// Sample Request:
+        ///     {
+        ///         "pageItems" : "1",
+        ///         "page" : "1",
+        ///         "NAME" : "Wang"
+        ///     }
         /// <response code="200">return list</response>
         /// <response code="400">Not have enough infomation</response>
         /// <response code="401">Unauthorize</response>
         /// <response code="404">Not found any user</response>
         /// <response code="500">Internal Error</response>
         [HttpGet]
+        #region RepCode 200 400 401 404 500
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetUserListSearchByName(string pageItems, string page, string search)
+        #endregion
+        public IActionResult GetCandidatesSearch(string pageItems, string page, string NAME)
         {
             int PageItems, Page;
 
+            #region Set default paging values if null or empty input
+            //  pageItems
             try
             {
                 PageItems = (pageItems == null || pageItems.Length <= 0) ? 99 : int.Parse(pageItems);
@@ -196,7 +254,7 @@ namespace API.Controllers
             {
                 return BadRequest("Number of Items per page must be in digits only");
             }
-
+            //  page
             try
             {
                 Page = (page == null || page.Length <= 0) ? 1 : int.Parse(page);
@@ -205,46 +263,75 @@ namespace API.Controllers
             {
                 return BadRequest("Page Number must be in digits only");
             }
+            #endregion
 
             var apm = new AdminPageModel();
 
-            List<PageModel> pageModels = _adminLogic
-                .GetPageModelSearchList(PageItems, Page, search);
-
-            if (pageModels.Count == 0)
+            try
             {
-                return NotFound("There no user with " + search + " Name");
-            }
+                List<PageModel> pageModels = _adminLogic.GetPageModelSearchList(PageItems, Page, NAME);
+                if (pageModels.Count == 0)
+                {
+                    return NotFound("There no user with name : " + NAME);
+                }
 
-            if (pageModels == null)
+                apm.UserList = pageModels;
+                return Ok(apm);
+            }
+            catch (Exception)
             {
-                return BadRequest("sum ting wong");
+                return BadRequest("System Error: Please check inputs and connection");
             }
-
-            apm.UserList = pageModels;
-            return Ok(apm);
         }
 
+
+
+        /// <summary>
+        /// Download Candidate's CV file
+        /// </summary>
+        /// Sample Request:
+        ///     {
+        ///         "Id" : "0000-0000000-00000-00000"
+        ///     }
+        /// <returns>File</returns>
+        /// <response code="200">Success upload file</response>
+        /// <response code="400">Not have enough infomation</response>
+        /// <response code="401">Unauthorize</response>
+        /// <response code="404">File Not Found</response>
+        /// <response code="500">Internal Error</response>
         [HttpGet]
-        public IActionResult GetUserCv(Guid Id)
+        #region repCode 200 400 401 404 500
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        #endregion
+        public IActionResult GetCandidateCv(Guid Id)
         {
+            string response = "";
+
             // Check UserID Input
             if (Id == null)
             {
                 return BadRequest("Missing User Id");
             }
-            string response = "";
+
             try
             {
                 response = _userLogic.ReadFileUrlAsync(Id);
             }
-            catch (NullReferenceException nre)
+            catch (AmazonS3Exception)
             {
-                return NotFound(nre);
+                return BadRequest("Unable to retrieve file");
             }
-            catch (Exception e)
+            catch (NullReferenceException)
             {
-                return BadRequest(e);
+                return NotFound("User CV Not Found");
+            }
+            catch (Exception)
+            {
+                return BadRequest("Error");
             }
 
             return Ok(response);

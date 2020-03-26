@@ -180,9 +180,9 @@ namespace BLL.BussinessLogics
 
                 return url;
             }
-            catch (AmazonS3Exception)
+            catch (AmazonS3Exception s3)
             {
-                return ("Error");
+                throw s3;
             }
             catch (NullReferenceException nre)
             {

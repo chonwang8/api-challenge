@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20200325034208_addCVID")]
-    partial class addCVID
+    [Migration("20200326023559_Inital_Model")]
+    partial class Inital_Model
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
