@@ -1,9 +1,6 @@
 ﻿using BLL.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace BLL.BussinessLogics
+namespace BLL.Interfaces
 {
     public interface IGuestLogic
     {

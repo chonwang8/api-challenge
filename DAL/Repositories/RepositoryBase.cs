@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace DAL.Repositories
 {
@@ -19,7 +16,12 @@ namespace DAL.Repositories
         public System.Linq.IQueryable<T> GetAll()
         {
             return _dbSet;
-        }   
+        }
+
+        public T FindById(Guid id)
+        {
+            return _dbSet.Find(id);
+        }
 
         public void Insert(T entity)
         {

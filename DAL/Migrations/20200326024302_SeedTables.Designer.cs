@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20200313042108_Add-Position")]
-    partial class AddPosition
+    [Migration("20200326024302_SeedTables")]
+    partial class SeedTables
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -44,6 +44,29 @@ namespace DAL.Migrations
                     b.ToTable("Challenges");
                 });
 
+            modelBuilder.Entity("DAL.Entities.Cv", b =>
+                {
+                    b.Property<Guid>("CvId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UploadDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CvId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Cvs");
+                });
+
             modelBuilder.Entity("DAL.Entities.Position", b =>
                 {
                     b.Property<Guid>("PositionId")
@@ -71,6 +94,9 @@ namespace DAL.Migrations
                     b.Property<string>("ConfirmationCode")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("DateCreate")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -100,6 +126,15 @@ namespace DAL.Migrations
                     b.HasOne("DAL.Entities.Position", "Position")
                         .WithMany()
                         .HasForeignKey("PositionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DAL.Entities.Cv", b =>
+                {
+                    b.HasOne("DAL.Entities.User", "User")
+                        .WithOne("Cv")
+                        .HasForeignKey("DAL.Entities.Cv", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

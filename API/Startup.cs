@@ -1,10 +1,12 @@
 using BLL.BussinessLogics;
 using BLL.Helpers;
+using BLL.Interfaces;
 using DAL;
 using DAL.UnitOfWorks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +45,18 @@ namespace API
             // configure startup page
             var indexPage = Configuration.GetSection("IndexContent");
             services.Configure<IndexPage>(indexPage);
+
+            // configure admin guidance
+            var adminGuide = Configuration.GetSection("AdminGuide");
+            services.Configure<AdminGuide>(adminGuide);
+
+            // configure admin guidance
+            var login = Configuration.GetSection("LoginGuide");
+            services.Configure<LoginGuide>(login);
+
+            // configure admin guidance
+            var register = Configuration.GetSection("RegisterGuide");
+            services.Configure<RegisterGuide>(register);
             #endregion
 
             #region JWT Auth
@@ -82,6 +96,8 @@ namespace API
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserLogic, UserLogic>();
             services.AddScoped<IGuestLogic, GuestLogic>();
+            services.AddScoped<IAdminLogic, AdminLogic>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             #endregion
 
             #region Swagger
@@ -118,6 +134,7 @@ namespace API
             });
 
             #endregion
+
             services.AddControllers();
         }
 
@@ -138,7 +155,7 @@ namespace API
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                c.RoutePrefix = string.Empty;
+                c.RoutePrefix = "admin/secret/swaggerui";
             });
 
             app.UseAuthentication();

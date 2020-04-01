@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DAL.Migrations
 {
-    public partial class Init : Migration
+    public partial class Inital_Model : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -45,9 +45,10 @@ namespace DAL.Migrations
                 {
                     UserId = table.Column<Guid>(nullable: false),
                     Email = table.Column<string>(nullable: false),
+                    ConfirmationCode = table.Column<string>(nullable: false),
                     Phone = table.Column<string>(nullable: true),
                     FullName = table.Column<string>(nullable: true),
-                    ConfirmationCode = table.Column<string>(nullable: false),
+                    DateCreate = table.Column<DateTime>(nullable: false),
                     PositionId = table.Column<Guid>(nullable: false)
                 },
                 constraints: table =>
@@ -61,10 +62,36 @@ namespace DAL.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Cvs",
+                columns: table => new
+                {
+                    CvId = table.Column<Guid>(nullable: false),
+                    FileName = table.Column<string>(nullable: true),
+                    UploadDate = table.Column<DateTime>(nullable: false),
+                    UserId = table.Column<Guid>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cvs", x => x.CvId);
+                    table.ForeignKey(
+                        name: "FK_Cvs_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Challenges_PositionId",
                 table: "Challenges",
                 column: "PositionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cvs_UserId",
+                table: "Cvs",
+                column: "UserId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Positions_Name",
@@ -88,6 +115,9 @@ namespace DAL.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Challenges");
+
+            migrationBuilder.DropTable(
+                name: "Cvs");
 
             migrationBuilder.DropTable(
                 name: "Users");

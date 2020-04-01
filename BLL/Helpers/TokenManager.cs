@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using BLL.Models;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-
-using BLL.Models;
 
 namespace BLL.Helpers
 {
@@ -28,10 +25,11 @@ namespace BLL.Helpers
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
+                    new Claim("user_id", user.Id.ToString()),
                     new Claim("user_email", user.Email),
-                    new Claim("position", user.PositionName),
+                    new Claim("position", user.PositionName)
                 }),
-                Expires = DateTime.Now.AddMinutes(15),
+                Expires = DateTime.Now.AddMinutes(45),
                 Issuer = null,
                 Audience = null,
                 IssuedAt = DateTime.UtcNow,

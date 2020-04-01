@@ -15,4 +15,19 @@ namespace BLL.Helpers
     {
         public string Message { get; set; }
     }
+
+    public class AdminGuide
+    {
+        public string Message { get; set; }
+    }
+
+    public class RegisterGuide
+    {
+        public string Message { get; set; }
+    }
+
+    public class LoginGuide
+    {
+        public string Message { get; set; }
+    }
 }
