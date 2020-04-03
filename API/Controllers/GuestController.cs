@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
+using System.Text.RegularExpressions;
 
 namespace API.Controllers
 {
@@ -151,6 +152,8 @@ namespace API.Controllers
             //  Input : UserRegister includes :
             //  Email - Phone - FullName - PositionName
             UserLogin userLogin = new UserLogin();
+            Regex regex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
+            Match match = regex.Match(user.Email);
 
             //  check input from client
             if (user == null || user.PositionName.ToLower() == "admin")
@@ -160,6 +163,10 @@ namespace API.Controllers
             if (user.Email.Length <= 8)
             {
                 return BadRequest("Email and ConfimationCode must be 8 or more characters");
+            }
+            if (!match.Success)
+            {
+                return BadRequest("Invalid Email");
             }
 
             //  Register function
