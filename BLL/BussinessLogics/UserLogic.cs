@@ -7,6 +7,7 @@ using BLL.Interfaces;
 using BLL.Models;
 using DAL.Entities;
 using DAL.UnitOfWorks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using System;
@@ -21,12 +22,18 @@ namespace BLL.BussinessLogics
     {
         #region objects and constructors
         private readonly IUnitOfWork _uow;
-        private AppSetting appSetting;
-        public UserLogic(IUnitOfWork uow, IOptions<AppSetting> options)
+        private readonly IAmazonS3 S3Client;
+        private readonly AppSetting _appSetting;
+
+        public UserLogic(IUnitOfWork uow, IAmazonS3 s3Client, IOptions<AppSetting> options)
         {
             _uow = uow;
-            appSetting = options.Value;
+            S3Client = s3Client;
+            _appSetting = options.Value;
         }
+
+
+
         #endregion
 
 
@@ -77,106 +84,82 @@ namespace BLL.BussinessLogics
 
         public async Task<bool> WritingAnObjectAsync(Stream fileStream, string fileName, UserProfile userProfile)
         {
-            IAmazonS3 client = new AmazonS3Client(appSetting.AWSAccessKey, appSetting.AWSSecretKey, RegionEndpoint.APSoutheast1);
-            try
+            if (userProfile == null)
+                return false;
+            if (userProfile.Id == null)
+                return false;
+
+            var fileTransferUtility = new TransferUtility(S3Client);
+
+            var fileUploadRequest = new TransferUtilityUploadRequest()
             {
-                var fileTransferUtility = new TransferUtility(client);
+                BucketName = _appSetting.BucketName,
+                Key = userProfile.Email + "/" + fileName,
+                InputStream = fileStream
+            };
+            fileUploadRequest.Metadata.Add("email", userProfile.Email);
+            fileUploadRequest.Metadata.Add("upload-time", DateTime.Now.ToString());
 
-                CvModel cvModel = new CvModel
-                {
-                    Email = userProfile.Email,
-                    FileName = fileName,
-                    KeyName = Guid.NewGuid(),
-                    UploadDate = DateTime.Now,
-                };
 
-                var fileUploadRequest = new TransferUtilityUploadRequest()
-                {
-                    BucketName = appSetting.BucketName,
-                    Key = userProfile.Email + "/" + fileName,
-                    InputStream = fileStream,
-                };
-                fileUploadRequest.Metadata.Add("email", cvModel.Email);
-                fileUploadRequest.Metadata.Add("upload-time", cvModel.UploadDate.ToString());
-                if (userProfile.Id == null)
+                await fileTransferUtility.UploadAsync(fileUploadRequest);
+                #region CvTableInsert
+                var user = _uow.GetRepository<User>().GetAll().FirstOrDefault(u => u.UserId == userProfile.Id);
+                var existCv = _uow.GetRepository<Cv>().GetAll().FirstOrDefault(c => c.UserId == userProfile.Id);
+                if (user == null)
                 {
                     return false;
                 }
-                await fileTransferUtility.UploadAsync(fileUploadRequest);
-                #region CvTableInsert
-                try
-                {
-                    var user = _uow.GetRepository<User>().GetAll().FirstOrDefault(u => u.UserId == userProfile.Id);
-                    var existCv = _uow.GetRepository<Cv>().GetAll().FirstOrDefault(c => c.UserId == userProfile.Id);
-                    var cv = new Cv
-                    {
-                        UserId = userProfile.Id,
-                        FileName = cvModel.FileName,
-                        UploadDate = cvModel.UploadDate,
-                    };
-                    if (existCv == null)
-                    {
-                        _uow.GetRepository<Cv>().Insert(cv);
-                    }
-                    else
-                    {
-                        _uow.GetRepository<Cv>().Update(cv);
-                        _uow.GetRepository<User>().Update(user);
-                    }
-                    _uow.Commit();
 
-                }
-                catch (PostgresException pgs)
+                var cv = new Cv
                 {
-                    throw pgs;
+                    UserId = userProfile.Id,
+                    FileName = fileName,
+                    UploadDate = DateTime.Now,
+                };
+
+                if (existCv == null)
+                {
+                    _uow.GetRepository<Cv>().Insert(cv);
                 }
+                else
+                {
+                    _uow.GetRepository<Cv>().Update(cv);
+                    _uow.GetRepository<User>().Update(user);
+                }
+                _uow.Commit();
                 #endregion
                 return true;
-
-
-            }
-            catch (AmazonS3Exception)
-            {
-                return false;
-            }
-            catch (PostgresException pgs)
-            {
-                throw pgs;
-            }
         }
 
 
 
         public string ReadFileUrlAsync(Guid Id)
         {
+            string fileName;
+            string email;
             try
             {
-                IAmazonS3 client = new AmazonS3Client(appSetting.AWSAccessKey, appSetting.AWSSecretKey, RegionEndpoint.APSoutheast1);
-                string fileName;
-                try
-                {
-                    fileName = _uow.GetRepository<Cv>().GetAll().FirstOrDefault(c => c.UserId == Id).FileName;
-                }
-                catch (Exception e)
-                {
-                    throw e;
-                }
-                
-                if (fileName == null)
-                {
+                var cv = _uow.GetRepository<Cv>().GetAll().FirstOrDefault(c => c.UserId == Id);
+                if (cv == null)
                     return null;
-                }
-                var Email = _uow.GetRepository<User>().GetAll().FirstOrDefault(u => u.UserId == Id).Email;
-                
+                else
+                    fileName = cv.FileName;
+
+                var user = _uow.GetRepository<User>().GetAll().FirstOrDefault(u => u.UserId == Id);
+                if (user == null)
+                    return null;
+                else
+                    email = user.Email;
+
                 var request = new GetPreSignedUrlRequest()
                 {
-                    BucketName = appSetting.BucketName,
-                    Key = Email + "/" + fileName,
+                    BucketName = _appSetting.BucketName,
+                    Key = email + "/" + fileName,
                     Expires = DateTime.Now.AddDays(10),
                     Protocol = Protocol.HTTPS
                 };
 
-                string url = client.GetPreSignedURL(request);
+                string url = S3Client.GetPreSignedURL(request);
 
                 return url;
             }

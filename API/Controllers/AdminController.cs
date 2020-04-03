@@ -42,18 +42,20 @@ namespace API.Controllers
         public IActionResult GetCandidates()
         {
             var apm = new AdminPageModel();
-            try
+            List<PageModel> pageModels = _adminLogic.GetPageModelList();
+
+            if (pageModels == null)
             {
-                List<PageModel> pageModels = _adminLogic.GetPageModelList();
-                if (pageModels.Count == 0)
-                    return NotFound("There are no Candidates");
-                apm.UserList = pageModels;
-                return Ok(apm);
+                return BadRequest("System Error: Please check inputs or connection");
             }
-            catch (Exception)
+            if (pageModels.Count == 0)
             {
-                return BadRequest("System Error: Please check inputs and connection");
+                return NotFound("There are no Candidates");
             }
+            apm.UserList = pageModels;
+
+            return Ok(apm);
+
         }
 
 
@@ -81,49 +83,35 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         #endregion
-        public IActionResult GetCandidatesSort(string pageItems, string page, string INDEX)
+        public IActionResult GetCandidatesSort(int pageItems, int page, string INDEX)
         {
-            int PageItems, Page;
             var apm = new AdminPageModel();
             List<PageModel> pageModels = new List<PageModel>();
-            #region Set default paging values if null or empty input
-            try
+
+            #region Check Paging Input
+            if (pageItems <= 0)
             {
-                PageItems = (pageItems == null || pageItems.Length <= 0) ? 40 : int.Parse(pageItems);
+                return BadRequest("Paging error : Items per page must be positive integer");
             }
-            catch (Exception)
+            if (page <= 0)
             {
-                return BadRequest("Number of Items per page must be in digits only");
-            }
-            try
-            {
-                Page = (page == null || page.Length <= 0) ? 1 : int.Parse(page);
-            }
-            catch (Exception)
-            {
-                return BadRequest("Page Number must be in digits only");
+                return BadRequest("Paging error : Page number must be positive integer");
             }
             #endregion
 
-            try
-            {
-                pageModels = _adminLogic.GetPageModelSortList(PageItems, Page, INDEX); if (pageModels.Count == 0)
-                {
-                    return NotFound("There are no user");
-                }
-                apm.UserList = pageModels;
-
-                return Ok(apm);
-            }
-            catch (NullReferenceException)
+            pageModels = _adminLogic.GetPageModelSortList(pageItems, page, INDEX);
+            if (pageModels == null)
             {
                 return BadRequest("Error : Input Reference not found");
-
             }
-            catch (Exception)
+            if (pageModels.Count == 0)
             {
-                return BadRequest("System Error: Please check inputs and connection");
+                return NotFound("There are no user");
             }
+            apm.UserList = pageModels;
+
+            return Ok(apm);
+
         }
 
 
@@ -153,29 +141,18 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         #endregion
-        public IActionResult GetCandidatesSortFilter(string pageItems, string page, string INDEX, string POSITION)
+        public IActionResult GetCandidatesSortFilter(int pageItems, int page, string INDEX, string POSITION)
         {
-            int PageItems, Page;
             var apm = new AdminPageModel();
 
-            #region Set default paging values if null or empty input
-            //  pageItems
-            try
+            #region Check Paging Input
+            if (pageItems <= 0)
             {
-                PageItems = (pageItems == null || pageItems.Length <= 0) ? 40 : int.Parse(pageItems);
+                return BadRequest("Paging error : Items per page must be positive integer");
             }
-            catch (Exception)
+            if (page <= 0)
             {
-                return BadRequest("Number of Items per page must be in digits only");
-            }
-            //  page
-            try
-            {
-                Page = (page == null || page.Length <= 0) ? 1 : int.Parse(page);
-            }
-            catch (Exception)
-            {
-                return BadRequest("Page Number must be in digits only");
+                return BadRequest("Paging error : Page number must be positive integer");
             }
             #endregion
 
@@ -192,28 +169,18 @@ namespace API.Controllers
             }
             #endregion
 
-            try
-            {
-                List<PageModel> pageModels = _adminLogic.GetPageModelFilterList(PageItems, Page, INDEX, POSITION);
-                if (pageModels.Count == 0)
-                {
-                    return NotFound("There are no candidates in this position");
-                }
-                apm.UserList = pageModels;
-                return Ok(apm);
-            }
-            catch (ArgumentException)
-            {
-                return BadRequest("Input Error");
-            }
-            catch (NullReferenceException)
+            List<PageModel> pageModels = _adminLogic.GetPageModelFilterList(pageItems, page, INDEX, POSITION);
+            if (pageModels == null)
             {
                 return BadRequest("Error : Input Reference Not Found");
             }
-            catch (Exception)
+            if (pageModels.Count == 0)
             {
-                return BadRequest("System Error: Please check inputs and connection");
+                return NotFound("There are no candidates in this position");
             }
+            apm.UserList = pageModels;
+            return Ok(apm);
+
         }
 
 
@@ -240,48 +207,36 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         #endregion
-        public IActionResult GetCandidatesSearch(string pageItems, string page, string NAME)
+        public IActionResult GetCandidatesSearch(int pageItems, int page, string NAME)
         {
-            int PageItems, Page;
 
-            #region Set default paging values if null or empty input
-            //  pageItems
-            try
+            #region Check Paging Input
+            if (pageItems <= 0)
             {
-                PageItems = (pageItems == null || pageItems.Length <= 0) ? 99 : int.Parse(pageItems);
+                return BadRequest("Paging error : Items per page must be positive integer");
             }
-            catch (Exception)
+            if (page <= 0)
             {
-                return BadRequest("Number of Items per page must be in digits only");
-            }
-            //  page
-            try
-            {
-                Page = (page == null || page.Length <= 0) ? 1 : int.Parse(page);
-            }
-            catch (Exception)
-            {
-                return BadRequest("Page Number must be in digits only");
+                return BadRequest("Paging error : Page number must be positive integer");
             }
             #endregion
 
             var apm = new AdminPageModel();
 
-            try
-            {
-                List<PageModel> pageModels = _adminLogic.GetPageModelSearchList(PageItems, Page, NAME);
-                if (pageModels.Count == 0)
-                {
-                    return NotFound("There no user with name : " + NAME);
-                }
+            List<PageModel> pageModels = _adminLogic.GetPageModelSearchList(pageItems, page, NAME);
 
-                apm.UserList = pageModels;
-                return Ok(apm);
-            }
-            catch (Exception)
+            if (pageModels == null)
             {
-                return BadRequest("System Error: Please check inputs and connection");
+                return BadRequest("Error : Input Reference Not Found");
             }
+            if (pageModels.Count == 0)
+            {
+                return NotFound("There no user with name : " + NAME);
+            }
+
+            apm.UserList = pageModels;
+            return Ok(apm);
+
         }
 
 

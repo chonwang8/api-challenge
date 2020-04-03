@@ -1,3 +1,4 @@
+using Amazon.S3;
 using BLL.BussinessLogics;
 using BLL.Helpers;
 using BLL.Interfaces;
@@ -38,7 +39,7 @@ namespace API
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSetting>(appSettingsSection);
 
-            // configure startup page
+            // configure help page
             var helpPage = Configuration.GetSection("HelpContent");
             services.Configure<HelpPage>(helpPage);
 
@@ -50,11 +51,11 @@ namespace API
             var adminGuide = Configuration.GetSection("AdminGuide");
             services.Configure<AdminGuide>(adminGuide);
 
-            // configure admin guidance
+            // configure login guidance
             var login = Configuration.GetSection("LoginGuide");
             services.Configure<LoginGuide>(login);
 
-            // configure admin guidance
+            // configure register guidance
             var register = Configuration.GetSection("RegisterGuide");
             services.Configure<RegisterGuide>(register);
             #endregion
@@ -80,6 +81,10 @@ namespace API
                         if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
                         {
                             context.Response.Headers.Add("Token-Expired", "true");
+                        }
+                        if (context.Exception.GetType() == typeof(InvalidOperationException))
+                        {
+                            context.Response.Headers.Add("Unauthorized access - Faulthy token", "true");
                         }
                         return Task.CompletedTask;
                     }
@@ -134,6 +139,9 @@ namespace API
             });
 
             #endregion
+
+            services.AddDefaultAWSOptions(Configuration.GetAWSOptions("AWS-AP-SG"));
+            services.AddAWSService<IAmazonS3>(ServiceLifetime.Transient);
 
             services.AddControllers();
         }
