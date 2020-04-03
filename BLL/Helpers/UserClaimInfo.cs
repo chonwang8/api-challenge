@@ -20,9 +20,19 @@ namespace BLL.Helpers
             if (identity != null)
             {
                 IEnumerable<Claim> claims = identity.Claims;
-                userProfile.Email = claims.FirstOrDefault(c => c.Type == "user_email").Value;
-                userProfile.PositionName = claims.FirstOrDefault(c => c.Type == "position").Value;
-                userProfile.Id = Guid.Parse(claims.FirstOrDefault(c => c.Type == "user_id").Value);
+                var emailClaim = claims.FirstOrDefault(c => c.Type == "user_email");
+                var positionClaim = claims.FirstOrDefault(c => c.Type == "position");
+                var idClaim = claims.FirstOrDefault(c => c.Type == "user_id");
+                if (emailClaim == null || positionClaim == null || idClaim == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    userProfile.Email = emailClaim.Value;
+                    userProfile.PositionName = positionClaim.Value;
+                    userProfile.Id = Guid.Parse(idClaim.Value);
+                }
             }
             return userProfile;
         }
