@@ -26,87 +26,111 @@ namespace BLL.BussinessLogics
         #endregion
 
 
+
         public string Login(UserLogin user)
         {
             TokenManager tokenManager = new TokenManager(_options);
-            User loggedUser = _uow
+            string tokenString;
+            User loggedUser;
+
+            //  Query user information from database
+            try
+            {
+                loggedUser = _uow
                 .GetRepository<User>()
                 .GetAll()
                 .Include(u => u.Position)
-                .SingleOrDefault(u => u.Email == user.Email && u.ConfirmationCode == user.ConfirmationCode);
+                .FirstOrDefault(u => u.Email == user.Email && u.ConfirmationCode == user.ConfirmationCode);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Unable to retrieve user information");
+            }
+
+            //  if user is not found
             if (loggedUser == null)
             {
-                throw new Exception("Incorrect Email or Password");
+                return null;
             }
 
-            string positionName = _uow
-                .GetRepository<Position>()
-                .GetAll()
-                .SingleOrDefault(p => p.PositionId == loggedUser.PositionId).Name;
-            if (positionName == null)
-            {
-                throw new ArgumentException("Invalid Position Applied");
-            }
-
-            UserProfile userProfile = new UserProfile
+            tokenString = tokenManager.CreateAccessToken(new UserProfile
             {
                 Id = loggedUser.UserId,
                 Email = loggedUser.Email,
-                PositionName = positionName
-            };
+                PositionName = loggedUser.Position.Name
+            }
+            );
 
-            string tokenString = tokenManager.CreateAccessToken(userProfile);
-            if (loggedUser.Position.Name == "admin")
-                return tokenString + "\n\n" + _help.Value.Message;
-            else
-                return tokenString;
+            return loggedUser.Position.Name == "admin" ? tokenString + "\n\n" + _help.Value.Message : tokenString;
         }
 
-        public UserLogin Register(UserRegister user)
+
+
+        public object Register(UserRegister user)
         {
             Guid positionId = new Guid();
+            User newUser = new User();
+
+            //  Check null and decline admin role
             if (user == null || user.PositionName.ToLower() == "admin")
             {
-                throw new ArgumentNullException("Invalid Acccount Input");
+                return null;
             }
 
+            //  Check duplicated email
             try
             {
-                positionId = _uow
-                .GetRepository<Position>()
-                .GetAll()
-                .SingleOrDefault(p => p.Name == user.PositionName).PositionId;
+                var checkEmail = _uow
+                    .GetRepository<User>()
+                    .GetAll()
+                    .FirstOrDefault(u => u.Email == user.Email);
+                if (checkEmail != null)
+                {
+                    return new ErrorModel("Email is already registered.");
+                }
             }
-            catch (InvalidOperationException ioe)
+            catch (Exception)
             {
-                throw ioe;
-            }
-            catch (NullReferenceException nre)
-            {
-                throw nre;
-            }
-            catch (Exception e)
-            {
-                throw e;
+                throw new Exception("Server Error, Please Try Again Later");
             }
 
 
-            string newCofimationCode = new ConfirmationCodeManager().GenerateConfimationCode();
+            //  Check user position
+            try
+            {
+                var checkPositionId = _uow
+                    .GetRepository<Position>()
+                    .GetAll()
+                    .FirstOrDefault(p => p.Name == user.PositionName);
+                if (checkPositionId == null)
+                {
+                    return new ErrorModel("Position not found.");
+                }
+                positionId = checkPositionId.PositionId;
+            }
+            catch (Exception)
+            {
+                throw new Exception("Server Error, Please Try Again Later");
+            }
 
-            //  Use domain class for now, will implement mapper later
-            User newUser = new User
+            //  Generate ConfirmationCode
+            string newConfimationCode = new ConfirmationCodeManager().GenerateConfimationCode();
+
+            newUser = new User
             {
                 Email = user.Email,
                 FullName = user.FullName,
                 Phone = user.Phone,
                 PositionId = positionId,
                 UserId = Guid.NewGuid(),
-                ConfirmationCode = newCofimationCode,
+                ConfirmationCode = newConfimationCode,
                 DateCreate = DateTime.Now
             };
 
+            //  Insert newUser to database
             _uow.GetRepository<User>().Insert(newUser);
             _uow.Commit();
+
             return new UserLogin
             {
                 Email = newUser.Email,

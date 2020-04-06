@@ -29,52 +29,42 @@ namespace BLL.BussinessLogics
 
         public IEnumerable<PageModel> GetPageModels()
         {
-            try
+            IEnumerable<PageModel> result = _uow
+            .GetRepository<User>()
+            .GetAll()
+            .Include(u => u.Position)
+            .Where(u => u.Position.Name != "admin") //  skip admin user
+            .Select(u => new PageModel
             {
-                IEnumerable<PageModel> result = _uow
-                .GetRepository<User>()
-                .GetAll()
-                .Include(u => u.Position)
-                .Where(u => u.Position.Name != "admin") //  skip admin user
-                .Select(u => new PageModel
-                {
-                    UserId = u.UserId,
-                    DateCreate = u.DateCreate,
-                    Email = u.Email,
-                    Position = u.Position.Name,
-                    FullName = u.FullName
-                });
+                UserId = u.UserId,
+                DateCreate = u.DateCreate,
+                Email = u.Email,
+                Position = u.Position.Name,
+                FullName = u.FullName
+            });
 
-                return result;
-            }
-            catch (Exception e)
+            if (result == null)
             {
-                throw e;
+                return null;
             }
+
+            return result;
         }
 
 
 
         public List<PageModel> GetPageModelList()
         {
-            try
-            {
-                List<PageModel> result = GetPageModels()
-                .OrderByDescending(u => u.DateCreate)
-                .ToList();
+            List<PageModel> result = GetPageModels()
+            .OrderByDescending(u => u.DateCreate)
+            .ToList();
 
-                if (result == null)
-                {
-                    return null;
-                }
-
-                return result;
-            }
-            catch (Exception e)
+            if (result == null)
             {
-                throw e;
+                return null;
             }
 
+            return result;
         }
 
 
@@ -87,31 +77,25 @@ namespace BLL.BussinessLogics
             List<PageModel> result = new List<PageModel>();
 
 
-            try
-            {
-                //  PageModel {UserId, Email, DateCreated, FullName, Position}
-                var propertyInfo = typeof(PageModel).GetProperty(INDEX);
+            //  PageModel {UserId, Email, DateCreated, FullName, Position}
+            var propertyInfo = typeof(PageModel).GetProperty(INDEX);
 
-                //  Paging
-                IEnumerable<PageModel> list = GetPageModels()
-                    .Skip(paging.SkipItem(page, pageItems))
-                    .Take(pageItems);
+            //  Paging
+            IEnumerable<PageModel> list = GetPageModels()
+                .Skip(paging.SkipItem(page, pageItems))
+                .Take(pageItems);
 
-                // Sorting by input index
-                result = list
-                        .OrderBy(p => propertyInfo.GetValue(p, null))
-                        .ToList();
+            // Sorting by input index
+            result = list
+                    .OrderBy(p => propertyInfo.GetValue(p, null))
+                    .ToList();
 
-                return result;
-            }
-            catch (NullReferenceException nre)
+            if (result == null)
             {
-                throw nre;
+                return null;
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
+
+            return result;
         }
 
 
@@ -124,37 +108,27 @@ namespace BLL.BussinessLogics
             List<PageModel> result = new List<PageModel>();
 
 
-            try
-            {
-                //  Get propertyInfo 
-                //  PageModel {UserId, Email, DateCreated, FullName, Position}
-                var propertyInfo = typeof(PageModel).GetProperty(INDEX);
+            //  Get propertyInfo 
+            //  PageModel {UserId, Email, DateCreated, FullName, Position}
+            var propertyInfo = typeof(PageModel).GetProperty(INDEX);
 
-                //  Paging
-                IEnumerable<PageModel> list = GetPageModels()
-                    .Skip(paging.SkipItem(page, pageItems))
-                    .Take(pageItems);
+            //  Paging
+            IEnumerable<PageModel> list = GetPageModels()
+                .Skip(paging.SkipItem(page, pageItems))
+                .Take(pageItems);
 
-                // Sorting by input index
-                list.OrderBy(p => propertyInfo.GetValue(p, null));
+            // Sorting by input index
+            list.OrderBy(p => propertyInfo.GetValue(p, null));
 
-                //  Filter by Candidate's Position Input
-                result = list.Where(u => u.Position == POSITION).ToList();
+            //  Filter by Candidate's Position Input
+            result = list.Where(u => u.Position == POSITION).ToList();
 
-                return result;
-            }
-            catch (ArgumentException ae)
+            if (result == null)
             {
-                throw ae;
+                return null;
             }
-            catch (NullReferenceException nre)
-            {
-                throw nre;
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
+
+            return result;
         }
 
 
@@ -164,21 +138,20 @@ namespace BLL.BussinessLogics
             var paging = new Paging();
             string searchName = NAME.ToLower();
             List<PageModel> result = new List<PageModel>();
-            try
-            {
-                result = GetPageModels()
-                    .Where(u => (u.FullName.ToLower().Contains(searchName)))
-                    .OrderBy(p => p.FullName)                       //  Sort
-                    .Skip(paging.SkipItem(page, pageItems))         //  Paging
-                    .Take(pageItems)
-                    .ToList();
 
-                return result;
-            }
-            catch (Exception e)
+            result = GetPageModels()
+                .Where(u => (u.FullName.ToLower().Contains(searchName)))
+                .OrderBy(p => p.FullName)                       //  Sort
+                .Skip(paging.SkipItem(page, pageItems))         //  Paging
+                .Take(pageItems)
+                .ToList();
+
+            if (result == null)
             {
-                throw e;
+                return null;
             }
+
+            return result;
         }
 
     }

@@ -16,20 +16,38 @@ namespace API.Attributes
 
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            try
+            string position = "";
+            if (context.HttpContext.User.Claims == null || !context.HttpContext.User.Claims.Any())
             {
-                var email = context.HttpContext.User.Claims.FirstOrDefault(z => z.Type == "user_email").Value;
-                var position = context.HttpContext.User.Claims.FirstOrDefault(z => z.Type == "position").Value;
+                context.Result = new ForbidResult("Unauthorized access - No token was found");
+            }
+            else
+            {
+                var emailClaim = context.HttpContext.User.Claims.FirstOrDefault(z => z.Type == "user_email");
+                if(emailClaim != null)
+                {
+                    var email = emailClaim.Value;
+                }
+                else
+                {
+                    context.Result = new ForbidResult("Unauthorized access - Faulthy token");
+                }
+
+                var positionClaim = context.HttpContext.User.Claims.FirstOrDefault(z => z.Type == "position");
+                if (positionClaim != null)
+                {
+                    position = positionClaim.Value;
+                }
+                else
+                {
+                    context.Result = new ForbidResult("Unauthorized access - Faulthy token");
+                }
+
                 if (!_permission.Contains(position))
                 {
                     context.Result = new ForbidResult();
                 }
             }
-            catch (NullReferenceException)
-            {
-                context.Result = new ForbidResult("Invalid Operation : no token");
-            }
-
         }
     }
 }

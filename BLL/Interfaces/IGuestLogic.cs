@@ -6,6 +6,6 @@ namespace BLL.Interfaces
     {
 
         string Login(UserLogin user);
-        UserLogin Register(UserRegister user);
+        object Register(UserRegister user);
     }
 }

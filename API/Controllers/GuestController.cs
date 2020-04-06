@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
+using System.Text.RegularExpressions;
 
 namespace API.Controllers
 {
@@ -63,10 +64,10 @@ namespace API.Controllers
         {
             UserLogin user = new UserLogin
             {
-                Email = email.ToLower(),
+                Email = email,
                 ConfirmationCode = confirmationCode,
             };
-            string response = "";
+            string response;
 
             //  Check For Bad Inputs
             if (user.Email == null || user.ConfirmationCode == null)
@@ -77,38 +78,23 @@ namespace API.Controllers
             {
                 return BadRequest("Email and ConfimationCode can not be empty");
             }
-            if (user.Email.Length <= 8)
-            {
-                return BadRequest("Email and ConfimationCode must be 8 or more characters");
-            }
-            if (user.ConfirmationCode.Length < 32)
-            {
-                return BadRequest("ConfimationCode must be 32 characters we sent you when you registered");
-            }
 
+            //  Login. Response token string if succeed. Null if not found
+            //  Returns exception when database is down.
             try
             {
                 response = _logic.Login(user);
-                //  If token was an empty string, it mean username or password were incorrect
-                //  In theory it should not reach this if-block, instead throws ArgumentNullException
-                //  This is here just for safety measure
-                if (response.Length == 0)
-                {
-                    return NotFound("Wrong Email or Confimation code");
-                }
             }
-            //  Exception When User Is Not Found
-            catch (ArgumentNullException arn)
+            catch (Exception e)
             {
-                return BadRequest(arn.Message);
-            }
-            //  Exception When Position Assigned To User Is Not Found
-            catch (ArgumentException ar)
-            {
-                return BadRequest(ar.Message);
+                return BadRequest(e.Message);
             }
 
-            return Ok(response);
+
+            if (response == null)
+                return Unauthorized("Login Failed. Please check Email or Confimation code");
+            else
+                return Ok(response);
         }
     }
 
@@ -166,45 +152,38 @@ namespace API.Controllers
             //  Input : UserRegister includes :
             //  Email - Phone - FullName - PositionName
             UserLogin userLogin = new UserLogin();
+            Regex regex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
+            Match match = regex.Match(user.Email);
+
+            //  check input from client
+            if (user == null || user.PositionName.ToLower() == "admin")
+            {
+                return BadRequest("Invalid Input");
+            }
+            if (user.Email.Length <= 8)
+            {
+                return BadRequest("Email and ConfimationCode must be 8 or more characters");
+            }
+            if (!match.Success)
+            {
+                return BadRequest("Invalid Email");
+            }
+
+            //  Register function
             try
             {
-                //  check input from client
-                if (user == null || user.PositionName.ToLower() == "admin")
-                {
-                    return BadRequest("Invalid Input");
-                }
-                //  initiate register function
-                userLogin = _logic.Register(user);
-                //  check if register functions successfully
-                if (userLogin == null)
-                {
-                    return BadRequest("Register Failed");
-                }
+                var userRegisterResponse = _logic.Register(user);
+                if (userRegisterResponse is ErrorModel)
+                    return BadRequest(userRegisterResponse);
+                else
+                    return Ok(userRegisterResponse);
             }
             //  GuestLogic received UserRegister = null
-            catch (ArgumentNullException arn)
+            catch (Exception e)
             {
-                return BadRequest(arn.Message + "\n" + arn.StackTrace);
+                return BadRequest(e.Message);
             }
-            //  GuestLogic - Position Applied Not Available 
-            catch (ArgumentException ar)
-            {
-                return BadRequest(ar.Message + "\n" + ar.StackTrace);
-            }
-            catch (NullReferenceException nre)
-            {
-                return BadRequest(nre.Message + "\n" + nre.StackTrace);
-            }
-            catch (InvalidOperationException ioe)
-            {
-                return BadRequest(ioe.Message + "\n" + ioe.StackTrace);
-            }
-            //  Return : UserLogin includes :
-            //  Email - ConfirmationCode
-            return Ok(userLogin);
+
         }
-
-
-
     }
 }

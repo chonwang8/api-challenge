@@ -53,15 +53,12 @@ namespace API.Controllers
         {
             UserClaimInfo claimInfo = new UserClaimInfo();
             UserProfile userProfile = claimInfo.GetProfile(HttpContext.User.Identity as ClaimsIdentity);
-            
-            if (userProfile.Email == null)
+
+            if (userProfile == null)
             {
-                return BadRequest("User not have pemission to access to this challenge");
+                return Unauthorized("Faulthy Token. Please Try Again");
             }
-            if (file.Length == 0)
-            {
-                return BadRequest("please provide valid file");
-            }
+
             var fileName = ContentDispositionHeaderValue
                 .Parse(file.ContentDisposition)
                 .FileName
@@ -76,18 +73,18 @@ namespace API.Controllers
                     await fileStream.CopyToAsync(ms);
                     status = await _userLogic.WritingAnObjectAsync(ms, fileName, userProfile);
                 }
-                catch (PostgresException pgs)
+                catch (PostgresException)
                 {
-                    return BadRequest("PostgresException\n\n" + pgs.Message + "\n" + pgs.StackTrace);
+                    return BadRequest("Database is down, please try again later.");
                 }
-                catch (DbUpdateException dbu)
+                catch (DbUpdateException)
                 {
-                    return BadRequest("DbUpdateException\n\n" + dbu.Message + "\n" + dbu.StackTrace);
+                    return BadRequest("Database error. Unable to update Cv file");
                 }
 
             }
             return status ? Ok("success")
-                          : StatusCode((int)HttpStatusCode.InternalServerError, $"error uploading {fileName}");
+                          : StatusCode((int)HttpStatusCode.InternalServerError, $"Error uploading {fileName}");
         }
 
 
@@ -113,17 +110,12 @@ namespace API.Controllers
         {
             UserClaimInfo claimInfo = new UserClaimInfo();
             UserProfile userProfile = claimInfo.GetProfile(HttpContext.User.Identity as ClaimsIdentity);
-            #region Check User
             
-            if (userProfile.Id == null)
+            if (userProfile == null)
             {
-                return BadRequest("Missing User Id");
+                return Unauthorized("Faulthy Token. Please Try Again");
             }
-            if (userProfile.Email == null)
-            {
-                return BadRequest("Missing Email");
-            }
-            #endregion
+
             string response = "";
             try
             {
@@ -141,7 +133,7 @@ namespace API.Controllers
             }
             catch (Exception)
             {
-                return BadRequest("Error");
+                return BadRequest("Server Error");
             }
 
             return Ok(response);
@@ -154,7 +146,7 @@ namespace API.Controllers
     public class ChallengesController : BaseController
     {
         #region classes and contructor
-        public ChallengesController(IUserLogic userLogic, IOptions<AppSetting> options) 
+        public ChallengesController(IUserLogic userLogic, IOptions<AppSetting> options)
             : base(userLogic, options)
         {
         }
@@ -184,9 +176,9 @@ namespace API.Controllers
         {
             UserClaimInfo claimInfo = new UserClaimInfo();
             UserProfile userProfile = claimInfo.GetProfile(HttpContext.User.Identity as ClaimsIdentity);
-            if (userProfile.Email == null || userProfile.PositionName == null)
+            if (userProfile == null)
             {
-                return BadRequest("User missing some vital infomation to use this feature");
+                return Unauthorized("Faulthy Token. Please Try Again");
             }
 
             var challenges = _userLogic.ViewChallengesList(userProfile);
@@ -220,9 +212,9 @@ namespace API.Controllers
         {
             UserClaimInfo claimInfo = new UserClaimInfo();
             UserProfile userProfile = claimInfo.GetProfile(HttpContext.User.Identity as ClaimsIdentity);
-            if (userProfile.PositionName == null)
+            if (userProfile == null)
             {
-                return BadRequest("User not have pemission to access to this challenge");
+                return Unauthorized("Faulthy Token. Please Try Again");
             }
 
             var chal = _userLogic.ViewChallengeContent(id);
